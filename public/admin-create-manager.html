@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <script>
+    window.__DMULLER_API_BASE__ = window.__DMULLER_API_BASE__
+      || (["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname)
+        ? "http://127.0.0.1:8000"
+        : "https://SEU-BACKEND-PRODUCAO");
+  </script>
+  <title>Criar Liderança • D’MULLER</title>
+  <link rel="stylesheet" href="/css/app.css">
+
+  <style>
+    .page-wrap{display:flex;flex-direction:column;gap:14px;}
+    .hero{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;
+      padding:18px;border:1px solid var(--border);border-radius:18px;background:var(--card);
+    }
+    .hero h1{margin:0;font-size:28px;line-height:1.15;}
+    .hero p{margin:6px 0 0;color:var(--muted);max-width:740px;}
+    .badge-role{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:10px 12px;border-radius:999px;border:1px solid var(--border);
+      background:rgba(255,255,255,.85);
+      font-weight:700;
+    }
+
+    .card-form{
+      padding:18px;border:1px solid var(--border);border-radius:18px;background:var(--card);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+    }
+    @media (max-width: 880px){
+      .grid{grid-template-columns: 1fr;}
+    }
+
+    .field{display:flex;flex-direction:column;gap:8px;}
+    .label{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .input{
+      width:100%;
+      box-sizing:border-box;
+      border-radius:14px;
+      border:1px solid var(--border);
+      padding:12px 12px;
+      background:#fff;
+      outline:none;
+      font-size:14px;
+    }
+    .input:focus{
+      border-color:rgba(30,58,138,.35);
+      box-shadow:0 0 0 4px rgba(30,58,138,.08);
+    }
+
+    .actions{
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px;
+    }
+
+    .btn-primary{
+      background: linear-gradient(135deg, #111827, #0b1220);
+      color:#fff;
+      border:1px solid #0b1220;
+      padding:12px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:800;
+    }
+    .btn-primary:hover{filter:brightness(1.05);}
+    .btn-ghost{
+      background:#fff;color:#111;
+      border:1px solid var(--border);
+      padding:12px 14px;border-radius:14px;
+      cursor:pointer;font-weight:800;
+    }
+    .btn-ghost:hover{background:#fafafa;}
+    .btn-primary:disabled,.btn-ghost:disabled{opacity:.65;cursor:not-allowed;}
+
+    .hint{
+      margin-top:12px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .alert{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-weight:700;
+    }
+    .alert.ok{border-color:#bbf7d0;background:#f0fdf4;color:#14532d;}
+    .alert.bad{border-color:#fecaca;background:#fff1f2;color:#9f1239;}
+  </style>
+</head>
+
+<body>
+  <script type="module">
+    // UI / Guard
+    import { requireRole } from "/js/auth-guard.js";
+    import { renderShell } from "/js/ui-shell.js";
+
+    // App firebase (db + firebaseConfig)
+    import { db, firebaseConfig } from "/js/firebase.js";
+
+    // Firebase SDK (somente o que precisamos)
+    import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      updateProfile,
+      setPersistence,
+      inMemoryPersistence,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { doc, setDoc, serverTimestamp, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    // somente admin
+    const { user, role } = await requireRole(["admin"]);
+    const content = await renderShell({ role, currentPage: "admin-create-manager" });
+
+    content.innerHTML = `
+      <div class="page-wrap">
+        <div class="hero">
+          <div>
+            <h1>Criar Liderança</h1>
+            <p>                                      </p>
+          </div>
+          
+        </div>
+
+        <div class="card-form">
+          <div class="grid">
+            <div class="field">
+              <div class="label">Nome</div>
+              <input class="input" id="nome" placeholder="Ex: Tiago Toledo" autocomplete="off"/>
+            </div>
+
+            <div class="field">
+              <div class="label">Email</div>
+              <input class="input" id="email" placeholder="tiago.toledo@dmuller.com.br" autocomplete="username"/>
+            </div>
+
+            <div class="field">
+              <div class="label">Senha provisória</div>
+              <input class="input" id="pass" type="password" placeholder="Defina uma senha inicial" autocomplete="new-password"/>
+            </div>
+
+            <div class="field">
+              <div class="label">Tipo de acesso</div>
+              <select class="input" id="tipoAcesso"><option value="manager">Gestor</option><option value="coordinator">Coordenador</option></select>
+            </div>
+            <div class="field">
+              <div class="label">Coordenador vinculado (opcional para gestor)</div>
+              <select class="input" id="coordinatorUid"><option value="">Sem vínculo</option></select>
+            </div>
+            <div class="field">
+              <div class="label">Observações (opcional)</div>
+              <input class="input" id="obs" placeholder="Ex: unidade, setor, etc." autocomplete="off"/>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn-primary" id="btnCreate">Criar Liderança</button>
+            <button class="btn-ghost" id="btnClear">Limpar</button>
+          </div>
+
+          <div id="msgWrap"></div>
+          <div class="hint"></div>
+        </div>
+      </div>
+    `;
+
+    const nome = document.getElementById("nome");
+    const email = document.getElementById("email");
+    const pass = document.getElementById("pass");
+    const obs  = document.getElementById("obs");
+    const tipoAcesso = document.getElementById("tipoAcesso");
+    const coordinatorUid = document.getElementById("coordinatorUid");
+
+    async function loadCoordinators(){
+      try {
+        const snap = await getDocs(query(collection(db, "roles"), where("role", "==", "coordinator")));
+        snap.forEach((d)=>{
+          const data = d.data() || {};
+          const opt = document.createElement("option");
+          opt.value = d.id;
+          opt.textContent = data.nome || data.email || "Coordenador";
+          coordinatorUid.appendChild(opt);
+        });
+      } catch {}
+    }
+    loadCoordinators();
+
+    tipoAcesso.addEventListener("change", ()=>{
+      coordinatorUid.disabled = tipoAcesso.value !== "manager";
+      if (tipoAcesso.value !== "manager") coordinatorUid.value = "";
+    });
+
+    const btnCreate = document.getElementById("btnCreate");
+    const btnClear  = document.getElementById("btnClear");
+    const msgWrap   = document.getElementById("msgWrap");
+
+    function setMsg(text, type="") {
+      if (!text) { msgWrap.innerHTML = ""; return; }
+      const cls = type === "ok" ? "alert ok" : type === "bad" ? "alert bad" : "alert";
+      msgWrap.innerHTML = `<div class="${cls}">${text}</div>`;
+    }
+
+    btnClear.addEventListener("click", () => {
+      nome.value = ""; email.value = ""; pass.value = ""; obs.value = "";
+      setMsg("");
+      nome.focus();
+    });
+
+    btnCreate.addEventListener("click", async () => {
+      const n = (nome.value || "").trim();
+      const e = (email.value || "").trim().toLowerCase();
+      const p = (pass.value || "").trim();
+      const o = (obs.value || "").trim();
+
+      if (!n || !e || !p) return setMsg("Preencha nome, email e senha provisória.", "bad");
+
+      btnCreate.disabled = true;
+      btnClear.disabled = true;
+      setMsg("Salvando acesso…");
+
+      // ✅ secondary auth com persistência em memória (não derruba o admin)
+      const secondaryApp = initializeApp(firebaseConfig, "secondary-create-manager-" + Date.now());
+      const secondaryAuth = getAuth(secondaryApp);
+
+      try {
+        await setPersistence(secondaryAuth, inMemoryPersistence);
+
+        const cred = await createUserWithEmailAndPassword(secondaryAuth, e, p);
+
+        try { await updateProfile(cred.user, { displayName: n }); } catch {}
+
+        const uid = cred.user.uid;
+
+        // ✅ cria perfil/role no Firestore
+        await setDoc(doc(db, "roles", uid), {
+          role: tipoAcesso.value,
+          coordinatorUid: tipoAcesso.value === "manager" ? (coordinatorUid.value || "") : "",
+          ativo: true,
+          nome: n,
+          email: e,
+          observacoes: o,
+          criadoEm: serverTimestamp(),
+          criadoPor: user.uid
+        });
+
+        setMsg(tipoAcesso.value === "coordinator" ? "Coordenador criado com sucesso." : "Gestor criado com sucesso.", "ok");
+        nome.value = ""; email.value = ""; pass.value = ""; obs.value = "";
+        nome.focus();
+
+      } catch (err) {
+        
+        const code = err?.code || "";
+
+        if (code.includes("auth/email-already-in-use")) {
+          setMsg("Esse email já está em uso. Tenta outro.", "bad");
+        } else if (code.includes("auth/weak-password")) {
+          setMsg("Senha fraca. Use pelo menos 6 caracteres.", "bad");
+        } else {
+          setMsg("Não consegui criar o gestor. Não foi possível concluir agora. Tente novamente em alguns instantes.", "bad");
+        }
+
+      } finally {
+        // ✅ limpa secundário
+        try { await signOut(secondaryAuth); } catch {}
+        try { await deleteApp(secondaryApp); } catch {}
+
+        btnCreate.disabled = false;
+        btnClear.disabled = false;
+      }
+    });
+
+    // foco inicial
+    nome.focus();
+  </script>
+</body>
+</html>

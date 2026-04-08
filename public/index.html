@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <script>
+    window.__DMULLER_API_BASE__ = window.__DMULLER_API_BASE__
+      || (["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname)
+        ? "http://127.0.0.1:8000"
+        : "https://SEU-BACKEND-PRODUCAO");
+  </script>
+  <title>Plataforma de Avaliações - Login</title>
+  <style>
+    :root{--bg:#0b0f1a;--txt:#e8eefc;--muted:rgba(232,238,252,.72);--line:rgba(255,255,255,.10);--panel2:rgba(18,26,43,.78);--field:rgba(14,21,38,.88);--brand:#7fb3ff;--danger:#ffb2a0;--ok:#9ff3c6}
+    *{box-sizing:border-box} html,body{height:100%} body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--txt);margin:0;background:var(--bg);overflow:hidden}
+    .bg{position:fixed;inset:0;z-index:-2;overflow:hidden;background:var(--bg)} .bg__video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.02)} .bg__overlay{position:absolute;inset:0;z-index:1;background:radial-gradient(70% 55% at 30% 30%, rgba(0,0,0,.20), rgba(0,0,0,.78)),linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.72))}
+    .wrap{min-height:100%;display:grid;place-items:center;padding:28px 18px}.card{width:min(860px,100%);display:grid;grid-template-columns:1.1fr 1fr;gap:18px;background:linear-gradient(180deg,var(--panel2),rgba(18,26,43,.62));border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(127,179,255,.10) inset;backdrop-filter:blur(14px);position:relative;overflow:hidden}.card::before{content:"";position:absolute;inset:-2px;background:radial-gradient(60% 40% at 30% 10%, rgba(127,179,255,.18), transparent 60%);pointer-events:none}
+    .left{padding:14px 14px 14px 10px;border-right:1px solid rgba(255,255,255,.06)} .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px}.dot{width:10px;height:10px;border-radius:999px;background:radial-gradient(circle at 30% 30%, #fff, var(--brand));box-shadow:0 0 18px rgba(127,179,255,.35)} .headline{margin-top:14px;font-size:26px;line-height:1.1;font-weight:950;letter-spacing:-.4px}
+    .right{padding:14px;display:flex;flex-direction:column;justify-content:center;gap:12px}.formTitle{font-size:14px;font-weight:900}.formSub{margin-top:-8px;color:var(--muted);font-size:12px}
+    .field{display:flex;align-items:center;gap:10px;background:var(--field);border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:10px 12px}.field:focus-within{border-color:rgba(127,179,255,.55);box-shadow:0 0 0 4px rgba(127,179,255,.12)} .icon{width:18px;height:18px;display:grid;place-items:center}.icon svg{width:18px;height:18px}
+    input{width:100%;background:transparent;border:0;outline:none;color:var(--txt);font-size:14px} input::placeholder{color:rgba(232,238,252,.55)} .toggle{background:transparent;border:0;color:rgba(232,238,252,.75);cursor:pointer;padding:6px 8px;border-radius:10px}.toggle:hover{background:rgba(255,255,255,.06)}
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap} .btn{appearance:none;border:1px solid rgba(127,179,255,.35);background:linear-gradient(180deg, rgba(127,179,255,.22), rgba(27,42,74,.65));color:#fff;padding:10px 14px;border-radius:14px;cursor:pointer;font-weight:900;display:inline-flex;align-items:center;gap:10px}.btn:hover{filter:brightness(1.06)}.btn:disabled{opacity:.65;cursor:not-allowed}.btn.secondary{background:transparent;border:1px solid rgba(255,255,255,.14);color:rgba(232,238,252,.88)}
+    .alert{display:none;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.18);color:rgba(232,238,252,.86);font-size:12px;line-height:1.35}.alert.show{display:block}.alert.bad{border-color:rgba(255,178,160,.35);background:rgba(80,20,12,.25);color:var(--danger)}.alert.ok{border-color:rgba(159,243,198,.35);background:rgba(10,60,30,.18);color:var(--ok)}
+    @media (max-width:860px){.card{grid-template-columns:1fr}.left{border-right:0;border-bottom:1px solid rgba(255,255,255,.06)}.headline{font-size:22px}} @media (max-width:768px){.bg__video{display:none}.bg{background:url("/assets/bg-poster.jpg") center/cover no-repeat,var(--bg)}}
+  </style>
+</head>
+<body>
+  <div class="bg"><video class="bg__video" autoplay muted loop playsinline preload="metadata" poster="/assets/bg-poster.jpg"><source src="/assets/bg-dmuller.mp4" type="video/mp4"/></video><div class="bg__overlay"></div></div>
+  <div class="wrap"><div class="card"><div class="left"><div class="logo"><span class="dot"></span><span>Plataforma de Avaliações - D'MULLER</span></div><div class="headline">Referência em distribuição.<br/>Agora com uma plataforma de desenvolvimento interno.</div></div><div class="right"><div class="formTitle">Entrar</div><div class="formSub">Use seu e-mail corporativo e a senha cadastrada.</div><div class="field"><div class="icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4V6Z" stroke="currentColor" opacity=".9"/><path d="M4 7l8 6 8-6" stroke="currentColor" opacity=".9"/></svg></div><input id="email" placeholder="E-mail" autocomplete="username" inputmode="email"/></div><div class="field"><div class="icon"><svg viewBox="0 0 24 24" fill="none"><path d="M7 11V8a5 5 0 0110 0v3" stroke="currentColor" opacity=".9"/><path d="M6 11h12v9H6v-9Z" stroke="currentColor" opacity=".9"/></svg></div><input id="pass" type="password" placeholder="Senha" autocomplete="current-password"/><button class="toggle" id="togglePass" type="button">👁️</button></div><div class="alert" id="msg"></div><div class="row"><button class="btn" id="btnLogin"><span>Entrar</span><span id="btnSpinner" style="display:none;">…</span></button><button class="btn secondary" id="btnLogout" style="display:none;">Sair</button></div></div></div></div>
+  <script type="module">
+    import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    import { auth, db } from "/js/firebase.js";
+    const email = document.getElementById("email");
+    const pass = document.getElementById("pass");
+    const btnLogin = document.getElementById("btnLogin");
+    const btnLogout = document.getElementById("btnLogout");
+    const msg = document.getElementById("msg");
+    const togglePass = document.getElementById("togglePass");
+    const btnSpinner = document.getElementById("btnSpinner");
+    const NEXT_KEY = "nextAfterLogin";
+    function setAlert(text, type="") { msg.className = "alert" + (type ? " " + type : ""); msg.textContent = text || ""; msg.classList.toggle("show", !!text); }
+    function setLoading(on){ btnLogin.disabled = on; btnSpinner.style.display = on ? "inline" : "none"; }
+    togglePass.addEventListener("click", ()=>{ pass.type = pass.type === "password" ? "text" : "password"; togglePass.textContent = pass.type === "password" ? "👁️" : "🙈"; });
+    async function routeByRole(user) {
+      const snap = await getDoc(doc(db, "roles", user.uid));
+      const data = snap.exists() ? (snap.data() || {}) : {};
+      const role = data.role || "";
+      const next = sessionStorage.getItem(NEXT_KEY); if (next) sessionStorage.removeItem(NEXT_KEY);
+      if (role === "admin" || role === "manager" || role === "coordinator") { window.location.href = next || "/manager-home.html"; return; }
+      if (role === "employee") { window.location.href = next || "/employee.html"; return; }
+      setAlert("Seu acesso ainda não está liberado. Fale com o RH para concluir o cadastro.", "bad");
+    }
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { btnLogout.style.display = "none"; return; }
+      btnLogout.style.display = "inline-flex";
+      setAlert("Validando acesso...", "");
+      try { await routeByRole(user); } catch { setAlert("Não foi possível validar seu acesso agora. Tente novamente.", "bad"); }
+    });
+    async function doLogin(){
+      const e = (email.value || "").trim();
+      const p = (pass.value || "").trim();
+      if (!e || !p) return setAlert("Preencha e-mail e senha.", "bad");
+      setLoading(true); setAlert("Entrando...", "");
+      try { await signInWithEmailAndPassword(auth, e, p); }
+      catch { setAlert("Falha no acesso. Confira e-mail e senha.", "bad"); }
+      finally { setLoading(false); }
+    }
+    btnLogin.addEventListener("click", doLogin);
+    document.addEventListener("keydown", ev => { if (ev.key === "Enter") doLogin(); });
+    btnLogout.addEventListener("click", async ()=>{ await signOut(auth); setAlert("Sessão encerrada.", "ok"); });
+  </script>
+</body>
+</html>

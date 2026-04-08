@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <script>
+    window.__DMULLER_API_BASE__ = window.__DMULLER_API_BASE__
+      || (["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname)
+        ? "http://127.0.0.1:8000"
+        : "https://SEU-BACKEND-PRODUCAO");
+  </script>
+  <title>Lideranças • D'MULLER</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<script type="module">
+import { requireRole } from "/js/auth-guard.js";
+import { renderShell } from "/js/ui-shell.js";
+import { db } from "/js/firebase.js";
+import { collection, getDocs, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const { user, role } = await requireRole(["admin"]);
+const content = await renderShell({ role, currentPage: "admin-managers" });
+content.innerHTML = `
+<style>
+.pg{max-width:1180px;margin:0 auto;display:grid;gap:14px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:22px;box-shadow:0 10px 24px rgba(0,0,0,.04)}.head{padding:18px 20px;border-bottom:1px solid #eef2f7}.title{font-size:24px;font-weight:900;color:#0f172a}.sub{margin-top:6px;color:#64748b;font-size:13px;font-weight:700}.top{padding:14px 20px;border-bottom:1px solid #eef2f7;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.search{width:min(420px,100%);padding:12px;border:1px solid #d1d5db;border-radius:12px;font:inherit}.count{font-size:12px;color:#64748b;font-weight:900}.group{margin:14px;border:1px solid #e5e7eb;border-radius:20px;overflow:hidden}.group-head{padding:14px 16px;background:#f8fbff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.coord-name{font-size:16px;font-weight:900;color:#0f172a}.coord-mail{margin-top:4px;color:#64748b;font-size:12px;font-weight:700}.toggle{padding:10px 12px;border:1px solid #d1d5db;border-radius:12px;background:#fff;font-weight:900;cursor:pointer}.managers{display:none;padding:14px;gap:10px;background:#fff}.managers.open{display:grid}.item{border:1px solid #e5e7eb;border-radius:18px;padding:14px;background:#fff}.row{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}.name{font-size:15px;font-weight:900;color:#0f172a}.mail{margin-top:4px;font-size:12px;color:#64748b;font-weight:700}.pill{display:inline-flex;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid #d1d5db}.ok{background:#ecfdf5;color:#166534;border-color:#a7f3d0}.off{background:#fff1f2;color:#b91c1c;border-color:#fecaca}.details{display:none;border-top:1px solid #eef2f7;margin-top:12px;padding-top:12px}.details.open{display:block}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:8px}.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:900}.input,.select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:12px;font:inherit}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.btn{padding:12px 14px;border-radius:12px;border:1px solid #d1d5db;background:#fff;font-weight:900;cursor:pointer}.btn.main{background:#0f172a;color:#fff;border-color:#0f172a}.msg{padding:0 20px 14px;font-weight:800}.okMsg{color:#166534}.badMsg{color:#b91c1c}@media(max-width:700px){.grid{grid-template-columns:1fr}}
+</style>
+<div class="pg"><div class="card"><div class="head"><div class="title">Lideranças</div><div class="sub">Coordenadores e gestores vinculados.</div></div><div class="top"><input id="search" class="search" placeholder="Buscar por nome ou e-mail"><div class="count" id="countLine">Total: 0</div></div><div id="groups"></div><div class="msg" id="msg"></div></div></div>`;
+
+const searchEl=document.getElementById('search'); const groupsEl=document.getElementById('groups'); const countLine=document.getElementById('countLine'); const msg=document.getElementById('msg'); const setMsg=(t,ok=false)=>{msg.className='msg ' + (t?(ok?'okMsg':'badMsg'):''); msg.textContent=t||'';};
+const snap = await getDocs(collection(db,'roles'));
+const all = snap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>['manager','coordinator'].includes(x.role)).sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR'));
+const coordinators = all.filter(x=>x.role==='coordinator');
+const managers = all.filter(x=>x.role==='manager');
+const coordMap = new Map(coordinators.map(x=>[x.id,x]));
+const escapeHtml=(s)=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+function render(){
+  const term=(searchEl.value||'').trim().toLowerCase();
+  const filteredCoords = coordinators.filter(c=>{ const own=(c.nome||'').toLowerCase().includes(term)||(c.email||'').toLowerCase().includes(term); const hasChild = managers.some(m=> (m.coordinatorUid||'')===c.id && (((m.nome||'').toLowerCase().includes(term)) || ((m.email||'').toLowerCase().includes(term)))); return !term || own || hasChild; });
+  countLine.textContent=`Coordenadores: ${coordinators.length} • Gestores: ${managers.length}`;
+  groupsEl.innerHTML = filteredCoords.map(coord=>{
+    const subs = managers.filter(m=>(m.coordinatorUid||'')===coord.id && (!term || (m.nome||'').toLowerCase().includes(term) || (m.email||'').toLowerCase().includes(term) || (coord.nome||'').toLowerCase().includes(term) || (coord.email||'').toLowerCase().includes(term)));
+    return `<div class="group"><div class="group-head"><div><div class="coord-name">${escapeHtml(coord.nome||'-')}</div><div class="coord-mail">${escapeHtml(coord.email||'-')} • ${subs.length} gestor(es)</div></div><button class="toggle" data-open="${coord.id}">Expandir</button></div><div class="managers" id="group-${coord.id}">${subs.length ? subs.map(item=>`<div class="item"><div class="row"><div><div class="name">${escapeHtml(item.nome||'-')}</div><div class="mail">${escapeHtml(item.email||'-')}</div></div><div class="row"><span class="pill ${item.ativo===false?'off':'ok'}">${item.ativo===false?'Inativo':'Ativo'}</span><button class="toggle" data-det="${item.id}">Detalhes</button></div></div><div class="details" id="det-${item.id}"><div class="grid"><div class="field"><div class="label">Nome</div><input class="input" id="nome-${item.id}" value="${escapeHtml(item.nome||'')}"></div><div class="field"><div class="label">Observações</div><input class="input" id="obs-${item.id}" value="${escapeHtml(item.observacoes||'')}"></div><div class="field"><div class="label">Status</div><select class="select" id="ativo-${item.id}"><option value="true" ${item.ativo!==false?'selected':''}>Ativo</option><option value="false" ${item.ativo===false?'selected':''}>Inativo</option></select></div><div class="field"><div class="label">Coordenador</div><input class="input" value="${escapeHtml(coord.nome||coord.email||'-')}" disabled></div></div><div class="actions"><button class="btn main" data-save="${item.id}">Salvar</button></div></div></div>`).join('') : '<div style="color:#64748b;font-weight:800">Nenhum gestor vinculado.</div>'}</div></div>`;
+  }).join('');
+  groupsEl.querySelectorAll('[data-open]').forEach(btn=>btn.addEventListener('click',()=>{ const box=document.getElementById('group-'+btn.dataset.open); box.classList.toggle('open'); btn.textContent = box.classList.contains('open') ? 'Fechar' : 'Expandir'; }));
+  groupsEl.querySelectorAll('[data-det]').forEach(btn=>btn.addEventListener('click',()=>{ const box=document.getElementById('det-'+btn.dataset.det); box.classList.toggle('open'); btn.textContent = box.classList.contains('open') ? 'Fechar' : 'Detalhes'; }));
+  groupsEl.querySelectorAll('[data-save]').forEach(btn=>btn.addEventListener('click', async ()=>{ const id=btn.dataset.save; const nome=document.getElementById('nome-'+id).value.trim(); const obs=document.getElementById('obs-'+id).value.trim(); const ativo=document.getElementById('ativo-'+id).value==='true'; if(!nome) return setMsg('O nome não pode ficar vazio.'); try{ await updateDoc(doc(db,'roles',id),{nome,observacoes:obs,ativo,atualizadoEm:serverTimestamp(),atualizadoPor:user.uid}); const item=all.find(x=>x.id===id); if(item){item.nome=nome;item.observacoes=obs;item.ativo=ativo;} setMsg('Alterações salvas com sucesso.',true); render(); }catch{ setMsg('Não foi possível salvar agora.'); }}));
+}
+searchEl.addEventListener('input', render); render();
+</script>
+</body>
+</html>

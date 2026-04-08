@@ -1,0 +1,107 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function roleExists(uid) { return signedIn() && exists(/databases/$(database)/documents/roles/$(uid)); }
+    function roleDoc(uid) { return roleExists(uid) ? get(/databases/$(database)/documents/roles/$(uid)) : null; }
+    function currentRole() { return roleExists(request.auth.uid) ? roleDoc(request.auth.uid).data.role : null; }
+    function isAdmin() { return currentRole() == 'admin'; }
+    function isCoordinator() { return currentRole() == 'coordinator'; }
+    function isManager() { return currentRole() == 'manager'; }
+    function isEmployee() { return currentRole() == 'employee'; }
+    function isLeader() { return isAdmin() || isCoordinator() || isManager(); }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+    function linkedManagerUid(data) {
+      return data.gestorId;
+    }
+    function managerBelongsToCurrentCoordinator(gestorId) {
+      return isCoordinator()
+        && gestorId != null
+        && gestorId != ''
+        && roleExists(gestorId)
+        && roleDoc(gestorId).data.coordinatorUid == request.auth.uid;
+    }
+    function managerCoordinatorMatchesRequest() {
+      return roleDoc(request.auth.uid).data.coordinatorUid == request.resource.data.coordinatorUid
+        || (roleDoc(request.auth.uid).data.coordinatorUid == null && request.resource.data.coordinatorUid == '');
+    }
+    function resourceForCurrentCoordinator(data) {
+      return isCoordinator() && (
+        data.coordinatorUid == request.auth.uid
+        || managerBelongsToCurrentCoordinator(linkedManagerUid(data))
+      );
+    }
+    function requestForCurrentCoordinator(data) {
+      return isCoordinator() && (
+        data.coordinatorUid == request.auth.uid
+        || managerBelongsToCurrentCoordinator(linkedManagerUid(data))
+      );
+    }
+
+    match /roles/{uid} {
+      allow get: if isAdmin()
+        || isSelf(uid)
+        || (isCoordinator() && resource.data.role == 'manager' && resource.data.coordinatorUid == request.auth.uid);
+      allow list: if isAdmin()
+        || (isCoordinator() && resource.data.role == 'manager' && resource.data.coordinatorUid == request.auth.uid);
+      allow create: if isAdmin()
+        || (isManager()
+          && request.resource.data.role == 'employee'
+          && request.resource.data.gestorId == request.auth.uid
+          && managerCoordinatorMatchesRequest());
+      allow update, delete: if isAdmin();
+    }
+
+    match /employees/{uid} {
+      allow read: if isAdmin()
+        || (isManager() && resource.data.gestorId == request.auth.uid)
+        || resourceForCurrentCoordinator(resource.data)
+        || isSelf(uid)
+        || (signedIn() && resource.data.uid == request.auth.uid);
+
+      allow create: if isAdmin()
+        || (isManager()
+          && request.resource.data.gestorId == request.auth.uid
+          && managerCoordinatorMatchesRequest());
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /review_tasks/{taskId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.gestorId == request.auth.uid)
+        || (signedIn() && resource.data.evaluatedUid == request.auth.uid)
+        || resourceForCurrentCoordinator(resource.data);
+
+      allow create, update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    match /performance_reviews/{reviewId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.gestorId == request.auth.uid)
+        || (signedIn() && resource.data.evaluatedUid == request.auth.uid)
+        || resourceForCurrentCoordinator(resource.data);
+
+      allow create: if isAdmin();
+
+      allow update: if isAdmin()
+        || (isEmployee()
+          && resource.data.evaluatedUid == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["acknowledgment", "updatedAt"]));
+
+      allow delete: if isAdmin();
+    }
+
+    match /app_settings/{docId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /feedbacks/{docId} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    window.__DMULLER_API_BASE__ = window.__DMULLER_API_BASE__
+      || (["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname)
+        ? "http://127.0.0.1:8000"
+        : "https://SEU-BACKEND-PRODUCAO");
+  </script>
+  <title>Historico de Avaliacoes • D'MULLER</title>
+  <link rel="stylesheet" href="/css/app.css" />
+
+  <style>
+    .mph-page{max-width:1180px;margin:0 auto}
+    .mph-stack{display:flex;flex-direction:column;gap:12px}
+
+    .mph-header{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      padding:14px;border:1px solid var(--dm-border);border-radius:var(--dm-r-xl);
+      background:linear-gradient(180deg,#fff,#fbfcff);box-shadow:var(--dm-shadow)
+    }
+    .mph-title{margin:0;font-size:18px;font-weight:950;color:var(--dm-text);line-height:1.2}
+    .mph-sub{margin-top:6px;color:var(--dm-muted);font-size:13px;font-weight:800}
+
+    .mph-panel{
+      border:1px solid var(--dm-border);border-radius:var(--dm-r-xl);
+      background:#fff;box-shadow:var(--dm-shadow);overflow:hidden
+    }
+    .mph-panelTop{
+      padding:12px 14px;border-bottom:1px solid rgba(16,24,40,.08);
+      display:flex;align-items:end;gap:10px;flex-wrap:wrap
+    }
+    .mph-field{display:flex;flex-direction:column;gap:6px;min-width:180px;flex:1}
+    .mph-label{font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--dm-muted)}
+    .mph-select,.mph-input{
+      width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(16,24,40,.14);
+      background:#fff;font-weight:900;color:var(--dm-text);outline:none
+    }
+    .mph-select:focus,.mph-input:focus{
+      border-color: rgba(245,197,24,.55);
+      box-shadow: 0 0 0 4px rgba(245,197,24,.22);
+    }
+
+    .mph-tableWrap{overflow:auto}
+    .mph-table{width:100%;border-collapse:separate;border-spacing:0}
+    .mph-table th,.mph-table td{
+      padding:12px 14px;border-bottom:1px solid rgba(16,24,40,.08);text-align:left;font-size:13px
+    }
+    .mph-table th{
+      background:#f8fafc;color:#475569;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:950;
+      position:sticky;top:0;z-index:1
+    }
+    .mph-empty{padding:16px;color:var(--dm-muted);font-weight:900}
+    .mph-link{color:#1d4ed8;text-decoration:none;font-weight:900}
+    .mph-link:hover{text-decoration:underline}
+
+    .mph-pill{
+      display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;
+      border:1px solid rgba(16,24,40,.14);font-size:12px;font-weight:950
+    }
+    .mph-pill.pending{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
+    .mph-pill.ack{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+
+    .mph-hint{
+      border:1px dashed rgba(16,24,40,.25);border-radius:var(--dm-r-xl);padding:14px;background:#fff;box-shadow:var(--dm-shadow);
+      color:var(--dm-muted);font-weight:800
+    }
+
+    @media (max-width:900px){
+      .mph-field{min-width:160px}
+    }
+  </style>
+</head>
+<body>
+  <script type="module" src="/js/managerPerformanceHistory.js"></script>
+</body>
+</html>

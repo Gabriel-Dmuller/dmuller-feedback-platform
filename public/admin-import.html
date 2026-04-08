@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <script>
+    window.__DMULLER_API_BASE__ = window.__DMULLER_API_BASE__
+      || (["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname)
+        ? "http://127.0.0.1:8000"
+        : "https://SEU-BACKEND-PRODUCAO");
+  </script>
+  <title>Importar Dados • Admin • D’MULLER</title>
+  <link rel="stylesheet" href="/css/app.css">
+
+  <style>
+    :root{
+      --ai-line:#dbe3ef;
+      --ai-title:#0b1f44;
+      --ai-text:#0f172a;
+      --ai-muted:#64748b;
+      --ai-shadow:0 14px 30px rgba(15,23,42,.08);
+    }
+
+    body{
+      background:
+        radial-gradient(circle at top right, rgba(244,196,0,.10), transparent 24%),
+        linear-gradient(180deg,#f8fbff 0%,#f2f5fa 100%);
+    }
+
+    .ai-page{max-width:1180px;margin:0 auto;display:grid;gap:14px}
+
+    .ai-hero{
+      background:linear-gradient(135deg,#081226 0%,#0f254c 100%);
+      color:#fff;
+      border-radius:24px;
+      padding:22px;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 16px 34px rgba(2,8,23,.18);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .ai-hero:before{
+      content:"";
+      position:absolute;
+      inset:auto -40px -40px auto;
+      width:220px;
+      height:220px;
+      border-radius:999px;
+      background:radial-gradient(circle, rgba(244,196,0,.22) 0%, rgba(244,196,0,0) 70%);
+      pointer-events:none;
+    }
+
+    .ai-kicker{
+      display:inline-flex;align-items:center;gap:8px;
+      font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#dbe7ff;
+    }
+    .ai-kicker i{
+      width:8px;height:8px;border-radius:999px;background:#f4c400;display:inline-block;
+      box-shadow:0 0 0 6px rgba(244,196,0,.14);
+    }
+
+    .ai-title{margin:10px 0 0;font-size:30px;font-weight:900;line-height:1.08}
+    .ai-sub{margin-top:8px;font-size:14px;color:#dbe7ff;font-weight:700;line-height:1.5;max-width:860px}
+
+    .ai-topTools{
+      margin-top:18px;
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    }
+
+    .ai-pill{
+      display:flex;gap:10px;align-items:center;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:999px;
+      padding:10px 12px;
+      color:#fff;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .ai-pill input[type="text"]{
+      width:180px;padding:8px 10px;border-radius:12px;border:1px solid #ddd;
+      background:#fff;color:#111827;font-weight:900;
+    }
+
+    .ai-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .ai-card{
+      background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+      border:1px solid var(--ai-line);
+      border-radius:22px;
+      padding:18px;
+      box-shadow:var(--ai-shadow);
+    }
+
+    .ai-cardTitle{font-size:18px;font-weight:900;color:var(--ai-title)}
+    .ai-cardSub{margin-top:6px;color:var(--ai-muted);font-size:13px;font-weight:700;line-height:1.5}
+
+    .ai-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+
+    .ai-btn{
+      padding:11px 14px;border-radius:14px;
+      border:1px solid rgba(16,24,40,.14);
+      background:#fff;font-weight:950;cursor:pointer;
+      color:var(--ai-text);
+      transition:transform .08s ease, filter .12s ease, background .12s ease;
+    }
+    .ai-btn:hover{background:#f9fafb}
+    .ai-btn:active{transform:translateY(1px)}
+
+    .ai-btn-dark{
+      background:linear-gradient(180deg,#111827,#0b1220);
+      border-color:#0b1220;color:#fff
+    }
+
+    .ai-btn-ghost{
+      background:#fff;border-color:#cbd5e1;color:#0f172a;
+    }
+
+    .ai-details{
+      margin-top:12px;
+      border:1px solid var(--ai-line);
+      border-radius:18px;
+      background:#fff;
+      overflow:hidden;
+    }
+
+    .ai-details summary{
+      cursor:pointer;
+      font-weight:900;
+      padding:14px 16px;
+      background:#f8fafc;
+      color:var(--ai-title);
+    }
+
+    .ai-details pre{
+      margin:0;
+      background:#ffffff;
+      border-top:1px solid var(--ai-line);
+      padding:14px 16px;
+      white-space:pre-wrap;
+      font-size:12px;
+      line-height:1.5;
+      color:#334155;
+      font-weight:800;
+    }
+
+    .ai-preview{
+      margin-top:12px;
+      color:#64748b;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .ai-logCard{
+      background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+      border:1px solid var(--ai-line);
+      border-radius:22px;
+      padding:18px;
+      box-shadow:var(--ai-shadow);
+    }
+
+    .ai-logHead{
+      display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;
+    }
+
+    .ai-logTitle{font-size:18px;font-weight:900;color:var(--ai-title)}
+    .ai-logSub{margin-top:5px;color:var(--ai-muted);font-size:13px;font-weight:700}
+
+    .ai-logBox{
+      margin-top:12px;
+      background:#0b1220;
+      color:#e5e7eb;
+      border-radius:16px;
+      padding:14px;
+      max-height:340px;
+      overflow:auto;
+      white-space:pre-wrap;
+      font-weight:800;
+      line-height:1.5;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .ai-progress{
+      margin-top:10px;
+      color:var(--ai-muted);
+      font-size:12px;
+      font-weight:900;
+    }
+
+    @media (max-width:980px){
+      .ai-grid{grid-template-columns:1fr}
+    }
+
+    @media (max-width:700px){
+      .ai-title{font-size:24px}
+    }
+  </style>
+</head>
+<body>
+<script type="module">
+  import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  import {
+    collection, getDocs, query, where, doc, getDoc, setDoc, updateDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+  import { db, firebaseConfig } from "/js/firebase.js";
+  import { requireRole } from "/js/auth-guard.js";
+  import { renderShell } from "/js/ui-shell.js";
+
+  const { user, role } = await requireRole(["admin"]);
+  const content = await renderShell({ role, currentPage: "admin-import" });
+
+  content.innerHTML = `
+    <div class="ai-page">
+      <section class="ai-hero">
+        <div class="ai-kicker"><i></i> Administração</div>
+        <div class="ai-title">Importação em massa</div>
+        <div class="ai-sub">
+        
+        </div>
+
+        <div class="ai-topTools">
+          <div class="ai-pill">
+            <span>Senha padrão</span>
+            <input id="defaultPass" type="text" value="Dmuller@2026" />
+          </div>
+
+          <label class="ai-pill" style="cursor:pointer;">
+            <input id="dryRun" type="checkbox" checked>
+            <span> SIMULAR </span>
+          </label>
+        </div>
+      </section>
+
+      <div class="ai-grid">
+        <section class="ai-card">
+          <div class="ai-cardTitle">Importar Gestores</div>
+          <div class="ai-cardSub">
+            CSV obrigatório com colunas <b>nome,email</b>. Também aceita <b>ativo</b> e <b>observacoes</b>.
+          </div>
+
+          <div class="ai-actions">
+            <input id="csvManagers" type="file" accept=".csv,text/csv" />
+            <button id="btnManagersPreview" class="ai-btn ai-btn-ghost">Prévia</button>
+            <button id="btnManagersImport" class="ai-btn ai-btn-dark">Importar</button>
+          </div>
+
+          <details class="ai-details">
+            <summary>Modelo de CSV — Gestores</summary>
+            <pre>nome,email,ativo,observacoes
+Gabriel Silva,gabriel@dmuller.com.br,true,Gestor CD
+Ana Souza,ana@dmuller.com.br,true,Gestor Comercial</pre>
+          </details>
+
+          <div id="managersPreview" class="ai-preview"></div>
+        </section>
+
+        <section class="ai-card">
+          <div class="ai-cardTitle">Importar Funcionários</div>
+          <div class="ai-cardSub">
+            CSV obrigatório com <b>gestorEmail</b> ou <b>gestorUid</b>, além de <b>nome,email</b>. Também aceita <b>cargo,admissao,nascimento,ativo,observacoes</b>.
+          </div>
+
+          <div class="ai-actions">
+            <input id="csvEmployees" type="file" accept=".csv,text/csv" />
+            <button id="btnEmployeesPreview" class="ai-btn ai-btn-ghost">Prévia</button>
+            <button id="btnEmployeesImport" class="ai-btn ai-btn-dark">Importar</button>
+          </div>
+
+          <details class="ai-details">
+            <summary>Modelo de CSV — Funcionários</summary>
+            <pre>gestorEmail,nome,email,cargo,admissao,nascimento,ativo,observacoes
+gabriel@dmuller.com.br,João Lima,joao.lima@dmuller.com.br,Conferente,2024-02-01,1999-08-10,true,Turno manhã
+ana@dmuller.com.br,Maria Souza,maria.souza@dmuller.com.br,RH,2023-06-12,2001-01-21,true,Filial X</pre>
+          </details>
+
+          <div id="employeesPreview" class="ai-preview"></div>
+        </section>
+      </div>
+
+      <section class="ai-logCard">
+        <div class="ai-logHead">
+          <div>
+            <div class="ai-logTitle">Log da importação</div>
+            <div class="ai-logSub">Erros aparecem com linha e motivo. No fim, você pode baixar o relatório.</div>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button id="btnClearLog" class="ai-btn ai-btn-ghost">Limpar log</button>
+            <button id="btnDownloadReport" class="ai-btn ai-btn-ghost" disabled>Baixar relatório</button>
+          </div>
+        </div>
+
+        <div id="progress" class="ai-progress"></div>
+        <pre id="log" class="ai-logBox"></pre>
+      </section>
+    </div>
+  `;
+
+  const elDefaultPass = document.getElementById("defaultPass");
+  const elDryRun = document.getElementById("dryRun");
+
+  const fManagers = document.getElementById("csvManagers");
+  const fEmployees = document.getElementById("csvEmployees");
+
+  const managersPreview = document.getElementById("managersPreview");
+  const employeesPreview = document.getElementById("employeesPreview");
+
+  const btnManagersPreview = document.getElementById("btnManagersPreview");
+  const btnManagersImport = document.getElementById("btnManagersImport");
+
+  const btnEmployeesPreview = document.getElementById("btnEmployeesPreview");
+  const btnEmployeesImport = document.getElementById("btnEmployeesImport");
+
+  const logEl = document.getElementById("log");
+  const progressEl = document.getElementById("progress");
+  const btnClearLog = document.getElementById("btnClearLog");
+  const btnDownloadReport = document.getElementById("btnDownloadReport");
+
+  let reportRows = [];
+
+  function log(line){
+    logEl.textContent += line + "\n";
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function setProgress(t){ progressEl.textContent = t || ""; }
+
+  btnClearLog.addEventListener("click", () => {
+    logEl.textContent = "";
+    setProgress("");
+    reportRows = [];
+    btnDownloadReport.disabled = true;
+  });
+
+  btnDownloadReport.addEventListener("click", () => {
+    const csv = toCsv(reportRows);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `import-report-${new Date().toISOString().slice(0,19).replaceAll(":","-")}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  function toCsv(rows){
+    const cols = ["tipo","linha","email","acao","status","motivo","uid","extra"];
+    const escape = (v) => {
+      const s = String(v ?? "");
+      if (/[,"\n]/.test(s)) return `"${s.replaceAll('"','""')}"`;
+      return s;
+    };
+    const head = cols.join(",");
+    const body = rows.map(r => cols.map(c => escape(r[c])).join(",")).join("\n");
+    return head + "\n" + body + "\n";
+  }
+
+  function parseCsv(text){
+    const raw = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    const firstLine = raw.split("\n")[0] || "";
+    const commas = (firstLine.match(/,/g) || []).length;
+    const semis  = (firstLine.match(/;/g) || []).length;
+    const delim = semis > commas ? ";" : ",";
+
+    const rows = [];
+    let i = 0, field = "", row = [], inQuotes = false;
+
+    while (i < raw.length) {
+      const ch = raw[i];
+
+      if (inQuotes) {
+        if (ch === '"') {
+          if (raw[i+1] === '"') { field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
+        }
+        field += ch; i++; continue;
+      } else {
+        if (ch === '"') { inQuotes = true; i++; continue; }
+        if (ch === delim) { row.push(field); field = ""; i++; continue; }
+        if (ch === "\n") {
+          row.push(field); field = "";
+          if (row.some(c => String(c).trim() !== "")) rows.push(row);
+          row = [];
+          i++; continue;
+        }
+        field += ch; i++; continue;
+      }
+    }
+    row.push(field);
+    if (row.some(c => String(c).trim() !== "")) rows.push(row);
+
+    if (!rows.length) return { headers: [], data: [] };
+
+    const normalizeHeader = (h) => {
+      let s = String(h ?? "");
+      s = s.replace(/^\uFEFF/, "");
+      s = s.trim().toLowerCase();
+      try { s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); } catch {}
+      s = s.replace(/\s+/g, "");
+      s = s.replace(/[_-]/g, "");
+
+      const map = {
+        gestoremail: "gestorEmail",
+        gestoruid: "gestorUid",
+        nome: "nome",
+        email: "email",
+        cargo: "cargo",
+        admissao: "admissao",
+        nascimento: "nascimento",
+        ativo: "ativo",
+        observacoes: "observacoes",
+        observacao: "observacoes",
+      };
+      return map[s] || String(h ?? "").trim();
+    };
+
+    const rawHeaders = rows[0].map(h => String(h || "").trim());
+    const headers = rawHeaders.map(normalizeHeader);
+
+    const data = rows.slice(1).map(r => {
+      const obj = {};
+      headers.forEach((h, idx) => obj[h] = (r[idx] ?? "").toString().trim());
+      return obj;
+    });
+
+    return { headers, data }
+  }
+
+  async function readFile(file){
+    const text = await file.text();
+    return parseCsv(text);
+  }
+
+  function previewBox(title, parsed){
+    const { headers, data } = parsed;
+    if (!headers.length) return `<div style="color:#b00020;font-weight:900;">Arquivo vazio ou inválido.</div>`;
+
+    const sample = data.slice(0, 10);
+    const cols = headers.slice(0, 8);
+
+    return `
+      <div style="margin-top:8px;font-weight:900;color:#0b1f44;">${title}</div>
+      <div style="margin-top:6px;color:#64748b;font-size:12px;">Colunas: <b>${headers.join(", ")}</b></div>
+      <div style="margin-top:10px;overflow:auto;border:1px solid #e5edf6;border-radius:14px;background:#fff;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr>${cols.map(c => `<th style="text-align:left;padding:10px;border-bottom:1px solid #eee;background:#f8fafc;">${c}</th>`).join("")}</tr>
+          </thead>
+          <tbody>
+            ${sample.map(r => `
+              <tr>${cols.map(c => `<td style="padding:10px;border-bottom:1px solid #f1f1f1;">${escapeHtml(r[c] ?? "")}</td>`).join("")}</tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:8px;color:#64748b;font-size:12px;">Linhas: <b>${data.length}</b> (mostrando 10)</div>
+    `;
+  }
+
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function normEmail(s){ return String(s||"").trim().toLowerCase(); }
+  function toBool(s, fallback=true){
+    if (s === "" || s == null) return fallback;
+    const v = String(s).trim().toLowerCase();
+    if (["true","1","sim","yes","y"].includes(v)) return true;
+    if (["false","0","nao","não","no","n"].includes(v)) return false;
+    return fallback;
+  }
+
+  async function createAuthUser(email, password){
+    const tempName = "tempImport_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+    const tempApp = initializeApp(firebaseConfig, tempName);
+    const tempAuth = getAuth(tempApp);
+
+    try {
+      const cred = await createUserWithEmailAndPassword(tempAuth, email, password);
+      const uid = cred.user.uid;
+      try { await signOut(tempAuth); } catch {}
+      return { uid };
+    } finally {
+      try { await deleteApp(tempApp); } catch {}
+    }
+  }
+
+  async function findUidByEmail(email){
+    const qy = query(collection(db, "roles"), where("email", "==", email));
+    const snap = await getDocs(qy);
+    if (snap.empty) return null;
+    return snap.docs[0].id;
+  }
+
+  async function upsertRole(uid, payload){
+    const ref = doc(db, "roles", uid);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      await updateDoc(ref, { ...payload, atualizadoEm: serverTimestamp() });
+      return "updated";
+    } else {
+      await setDoc(ref, { ...payload, criadoEm: serverTimestamp(), atualizadoEm: serverTimestamp() });
+      return "created";
+    }
+  }
+
+  async function upsertEmployeeDoc(uid, payload){
+    const directRef = doc(db, "employees", uid);
+    const directSnap = await getDoc(directRef);
+
+    if (directSnap.exists()) {
+      await updateDoc(directRef, { ...payload, atualizadoEm: serverTimestamp() });
+      return "updated_by_docid";
+    }
+
+    const qy = query(collection(db, "employees"), where("uid", "==", uid));
+    const snap = await getDocs(qy);
+
+    if (!snap.empty) {
+      const existingRef = snap.docs[0].ref;
+      await updateDoc(existingRef, { ...payload, atualizadoEm: serverTimestamp() });
+      return "updated_by_uid";
+    }
+
+    await setDoc(directRef, { ...payload, criadoEm: serverTimestamp(), atualizadoEm: serverTimestamp() });
+    return "created";
+  }
+
+  async function buildManagersMap(){
+    const qy = query(collection(db, "roles"), where("role", "==", "manager"));
+    const snap = await getDocs(qy);
+    const mapEmail = new Map();
+    const mapUid = new Map();
+    snap.forEach(d => {
+      const data = d.data() || {};
+      const uid = d.id;
+      const email = normEmail(data.email);
+      if (email) mapEmail.set(email, { uid, ...data });
+      mapUid.set(uid, { uid, ...data });
+    });
+    return { mapEmail, mapUid };
+  }
+
+  btnManagersPreview.addEventListener("click", async () => {
+    const file = fManagers.files?.[0];
+    if (!file) return managersPreview.innerHTML = `<div style="color:#b00020;font-weight:900;">Escolhe um CSV primeiro.</div>`;
+    const parsed = await readFile(file);
+    managersPreview.innerHTML = previewBox("Prévia — Gestores", parsed);
+  });
+
+  btnEmployeesPreview.addEventListener("click", async () => {
+    const file = fEmployees.files?.[0];
+    if (!file) return employeesPreview.innerHTML = `<div style="color:#b00020;font-weight:900;">Escolhe um CSV primeiro.</div>`;
+    const parsed = await readFile(file);
+    employeesPreview.innerHTML = previewBox("Prévia — Funcionários", parsed);
+  });
+
+  btnManagersImport.addEventListener("click", async () => {
+    const file = fManagers.files?.[0];
+    if (!file) { log("❌ Gestores: selecione um CSV."); return; }
+
+    const password = (elDefaultPass.value || "").trim();
+    if (!password) { log("❌ Defina uma senha padrão."); return; }
+
+    const dry = elDryRun.checked;
+    const { headers, data } = await readFile(file);
+
+    const must = ["nome","email"];
+    for (const m of must) {
+      if (!headers.includes(m)) {
+        log(`❌ CSV Gestores sem coluna obrigatória: ${m}`);
+        return;
+      }
+    }
+
+    log(`\n=== IMPORTAÇÃO GESTORES (${dry ? "DRY RUN" : "REAL"}) ===`);
+    setProgress(`Gestores: preparando… (${data.length} linhas)`);
+
+    let ok = 0, fail = 0;
+
+    for (let idx = 0; idx < data.length; idx++) {
+      const lineNo = idx + 2;
+      const row = data[idx];
+
+      const nome = String(row.nome || "").trim();
+      const email = normEmail(row.email);
+      const ativo = toBool(row.ativo, true);
+      const observacoes = String(row.observacoes || "").trim();
+
+      if (!nome || !email) {
+        fail++;
+        log(`❌ [linha ${lineNo}] faltando nome/email`);
+        reportRows.push({ tipo:"manager", linha:lineNo, email, acao:"skip", status:"fail", motivo:"faltando nome/email", uid:"", extra:"" });
+        continue;
+      }
+
+      setProgress(`Gestores: ${idx+1}/${data.length} • ${email}`);
+
+      try {
+        if (dry) {
+          ok++;
+          log(`🟡 [linha ${lineNo}] (dry) criaria/atualizaria gestor: ${nome} <${email}>`);
+          reportRows.push({ tipo:"manager", linha:lineNo, email, acao:"dry", status:"ok", motivo:"", uid:"", extra:"" });
+          continue;
+        }
+
+        let uid = await findUidByEmail(email);
+        let createdAuth = false;
+
+        if (!uid) {
+          const created = await createAuthUser(email, password);
+          uid = created.uid;
+          createdAuth = true;
+        }
+
+        const action = await upsertRole(uid, {
+          role: "manager",
+          nome,
+          email,
+          ativo,
+          observacoes,
+          atualizadoPor: user.uid
+        });
+
+        ok++;
+        log(`✅ [linha ${lineNo}] ${action} • ${nome} <${email}> ${createdAuth ? "(Auth criado)" : "(já existia)"}`);
+        reportRows.push({ tipo:"manager", linha:lineNo, email, acao:action, status:"ok", motivo:"", uid, extra: createdAuth ? "auth_created" : "auth_existing" });
+
+      } catch (e) {
+        
+        fail++;
+        log(`❌ [linha ${lineNo}] ${email} • erro: ${String(e?.message || e)}`);
+        reportRows.push({ tipo:"manager", linha:lineNo, email, acao:"write", status:"fail", motivo:String(e?.message||e), uid:"", extra:"" });
+      }
+    }
+
+    btnDownloadReport.disabled = reportRows.length === 0;
+    setProgress(`Gestores finalizado: ✅ ${ok} • ❌ ${fail}`);
+    log(`=== FIM GESTORES ===\n`);
+  });
+
+  btnEmployeesImport.addEventListener("click", async () => {
+    const file = fEmployees.files?.[0];
+    if (!file) { log("❌ Funcionários: selecione um CSV."); return; }
+
+    const password = (elDefaultPass.value || "").trim();
+    if (!password) { log("❌ Defina uma senha padrão."); return; }
+
+    const dry = elDryRun.checked;
+    const { headers, data } = await readFile(file);
+
+    const mustAny = ["gestorEmail","gestorUid"];
+    const hasLink = mustAny.some(c => headers.includes(c));
+    if (!hasLink) {
+      log(`❌ CSV Funcionários precisa ter "gestorEmail" OU "gestorUid".`);
+      return;
+    }
+
+    const must = ["nome","email"];
+    for (const m of must) {
+      if (!headers.includes(m)) {
+        log(`❌ CSV Funcionários sem coluna obrigatória: ${m}`);
+        return;
+      }
+    }
+
+    log(`\n=== IMPORTAÇÃO FUNCIONÁRIOS (${dry ? "DRY RUN" : "REAL"}) ===`);
+    setProgress(`Funcionários: carregando gestores…`);
+
+    const { mapEmail, mapUid } = await buildManagersMap();
+
+    if (mapEmail.size === 0 && mapUid.size === 0) {
+      log("❌ Nenhum gestor encontrado em roles. Importe gestores primeiro.");
+      return;
+    }
+
+    let ok = 0, fail = 0;
+
+    for (let idx = 0; idx < data.length; idx++) {
+      const lineNo = idx + 2;
+      const row = data[idx];
+
+      const gestorEmail = normEmail(row.gestorEmail || "");
+      const gestorUid = String(row.gestorUid || "").trim();
+
+      const nome = String(row.nome || "").trim();
+      const email = normEmail(row.email);
+      const cargo = String(row.cargo || "").trim();
+      const admissao = String(row.admissao || "").trim();
+      const nascimento = String(row.nascimento || "").trim();
+      const ativo = toBool(row.ativo, true);
+      const observacoes = String(row.observacoes || "").trim();
+
+      if (!nome || !email) {
+        fail++;
+        log(`❌ [linha ${lineNo}] faltando nome/email`);
+        reportRows.push({ tipo:"employee", linha:lineNo, email, acao:"skip", status:"fail", motivo:"faltando nome/email", uid:"", extra:"" });
+        continue;
+      }
+
+      let gestor = null;
+      if (gestorUid && mapUid.has(gestorUid)) gestor = mapUid.get(gestorUid);
+      if (!gestor && gestorEmail && mapEmail.has(gestorEmail)) gestor = mapEmail.get(gestorEmail);
+
+      if (!gestor) {
+        fail++;
+        log(`❌ [linha ${lineNo}] ${email} • gestor não encontrado (${gestorEmail || gestorUid || "sem link"})`);
+        reportRows.push({ tipo:"employee", linha:lineNo, email, acao:"skip", status:"fail", motivo:"gestor não encontrado", uid:"", extra: gestorEmail || gestorUid });
+        continue;
+      }
+
+      setProgress(`Funcionários: ${idx+1}/${data.length} • ${email}`);
+
+      try {
+        if (dry) {
+          ok++;
+          log(`🟡 [linha ${lineNo}] (dry) criaria funcionário ${nome} <${email}> para gestor ${gestor?.nome || ""} <${gestor?.email || ""}>`);
+          reportRows.push({ tipo:"employee", linha:lineNo, email, acao:"dry", status:"ok", motivo:"", uid:"", extra:`gestor:${gestor.nome || gestor.email || "sem nome"}` });
+          continue;
+        }
+
+        let uid = await findUidByEmail(email);
+        let createdAuth = false;
+
+        if (!uid) {
+          const created = await createAuthUser(email, password);
+          uid = created.uid;
+          createdAuth = true;
+        }
+
+        const action = await upsertRole(uid, {
+          role: "employee",
+          nome,
+          email,
+          gestorId: gestor.uid,
+          coordinatorUid: gestor.coordinatorUid || "",
+          ativo,
+          atualizadoPor: user.uid
+        });
+
+        const employeeAction = await upsertEmployeeDoc(uid, {
+          uid,
+          nome,
+          email,
+          cargo: cargo || "",
+          admissionDate: admissao || "",
+          nascimento: nascimento || "",
+          ativo,
+          observacoesCadastro: observacoes || "",
+          gestorId: gestor.uid,
+          coordinatorUid: gestor.coordinatorUid || "",
+          gestorEmail: normEmail(gestor.email || ""),
+          importadoEm: serverTimestamp(),
+          importadoPor: user.uid
+        });
+
+        ok++;
+        log(`✅ [linha ${lineNo}] ${action}/${employeeAction} • ${nome} <${email}> → gestor ${gestor?.nome || ""} ${createdAuth ? "(Auth criado)" : "(já existia)"}`);
+        reportRows.push({ tipo:"employee", linha:lineNo, email, acao:action, status:"ok", motivo:"", uid, extra: createdAuth ? "auth_created" : "auth_existing" });
+
+      } catch (e) {
+        
+        fail++;
+        log(`❌ [linha ${lineNo}] ${email} • erro: ${String(e?.message || e)}`);
+        reportRows.push({ tipo:"employee", linha:lineNo, email, acao:"write", status:"fail", motivo:String(e?.message||e), uid:"", extra:"" });
+      }
+    }
+
+    btnDownloadReport.disabled = reportRows.length === 0;
+    setProgress(`Funcionários finalizado: ✅ ${ok} • ❌ ${fail}`);
+    log(`=== FIM FUNCIONÁRIOS ===\n`);
+  });
+</script>
+</body>
+</html>

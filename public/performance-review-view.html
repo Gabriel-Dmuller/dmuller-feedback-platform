@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script>
+    window.__DMULLER_API_BASE__ = window.__DMULLER_API_BASE__
+      || (["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname)
+        ? "http://127.0.0.1:8000"
+        : "https://SEU-BACKEND-PRODUCAO");
+  </script>
+  <title>Visualizar Avaliação de Desempenho</title>
+  <style>
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --card-soft:#f8fafc;
+      --line:#dbe3ef;
+      --text:#0f172a;
+      --muted:#64748b;
+      --title:#0b1f44;
+      --accent:#f4c400;
+      --accent-dark:#c99f00;
+      --ok-bg:#dcfce7;
+      --ok-text:#166534;
+      --warn-bg:#fff7d6;
+      --warn-text:#92400e;
+      --info-bg:#e8f1ff;
+      --info-text:#1d4ed8;
+      --shadow:0 14px 30px rgba(15,23,42,.08);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+
+    body{
+      background:
+        radial-gradient(circle at top right, rgba(244,196,0,.12), transparent 22%),
+        linear-gradient(180deg,#f8fbff 0%,#f2f5fa 100%);
+      color:var(--text);
+      font-family:Arial,Helvetica,sans-serif;
+    }
+
+    header{
+      background:linear-gradient(135deg,#081226 0%,#0e2349 100%);
+      color:#fff;
+      padding:24px 0;
+      border-bottom:4px solid var(--accent);
+      box-shadow:0 10px 30px rgba(2,8,23,.18);
+    }
+
+    .header-wrap,
+    main{
+      max-width:1180px;
+      margin:0 auto;
+      padding:0 22px;
+    }
+
+    .header-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:#dbe7ff;
+      opacity:.95;
+    }
+
+    .eyebrow i{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:var(--accent);
+      display:inline-block;
+      box-shadow:0 0 0 6px rgba(244,196,0,.14);
+    }
+
+    .title{
+      margin-top:10px;
+      font-size:30px;
+      font-weight:900;
+      line-height:1.05;
+    }
+
+    .sub{
+      margin-top:8px;
+      font-size:14px;
+      color:#d8e3f8;
+      font-weight:700;
+      line-height:1.5;
+    }
+
+    .top-pills{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+      border:1px solid transparent;
+      white-space:nowrap;
+    }
+
+    .pill.pending{
+      background:var(--warn-bg);
+      color:var(--warn-text);
+      border-color:#f6d88e;
+    }
+
+    .pill.ack{
+      background:var(--ok-bg);
+      color:var(--ok-text);
+      border-color:#9fdfb1;
+    }
+
+    .pill.info{
+      background:rgba(255,255,255,.12);
+      color:#fff;
+      border-color:rgba(255,255,255,.18);
+    }
+
+    main{
+      padding-top:22px;
+      padding-bottom:30px;
+    }
+
+    .hero{
+      background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      margin-bottom:16px;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:14px;
+    }
+
+    .hero-box{
+      background:var(--card-soft);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    .hero-label{
+      font-size:11px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:900;
+    }
+
+    .hero-value{
+      margin-top:8px;
+      font-size:18px;
+      font-weight:900;
+      color:var(--title);
+      line-height:1.25;
+    }
+
+    .hero-sub{
+      margin-top:6px;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+      line-height:1.45;
+    }
+
+    .section-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      margin-bottom:16px;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .section-title{
+      font-size:18px;
+      font-weight:900;
+      color:var(--title);
+    }
+
+    .section-sub{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:5px;
+      font-weight:700;
+      line-height:1.45;
+    }
+
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .kpi{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+    }
+
+    .kpi .k{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:var(--muted);
+      font-weight:900;
+    }
+
+    .kpi .v{
+      margin-top:10px;
+      font-size:26px;
+      font-weight:900;
+      color:var(--title);
+      line-height:1.1;
+    }
+
+    .kpi .v.kpi-sm{
+      font-size:18px;
+      line-height:1.25;
+    }
+
+    .kpi .m{
+      margin-top:8px;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+      line-height:1.4;
+    }
+
+    .comment-box{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+      padding:16px;
+      white-space:pre-wrap;
+      line-height:1.6;
+      font-size:14px;
+      font-weight:700;
+      color:#1e293b;
+      min-height:64px;
+    }
+
+    .sections-list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .sec-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+      overflow:hidden;
+    }
+
+    .sec-head{
+      padding:16px;
+      display:grid;
+      grid-template-columns:minmax(220px, 320px) 1fr auto;
+      align-items:center;
+      gap:14px;
+    }
+
+    .sec-main{
+      min-width:0;
+    }
+
+    .sec-title{
+      font-size:16px;
+      font-weight:900;
+      color:var(--title);
+    }
+
+    .sec-meta{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:8px;
+    }
+
+    .score-pill{
+      background:#eef4ff;
+      color:#1d4ed8;
+      border:1px solid #cfe0ff;
+    }
+
+    .sec-progress-wrap{
+      min-width:240px;
+      flex:1;
+    }
+
+    .sec-progress{
+      height:10px;
+      background:#edf2f7;
+      border:1px solid #dbe3ef;
+      border-radius:999px;
+      overflow:hidden;
+    }
+
+    .sec-progress > i,
+    .mini-progress > i{
+      display:block;
+      height:100%;
+      border-radius:999px;
+    }
+
+    .is-good{background:linear-gradient(90deg,#22c55e 0%,#16a34a 100%)}
+    .is-mid{background:linear-gradient(90deg,#f4c400 0%,#eab308 100%)}
+    .is-bad{background:linear-gradient(90deg,#fb7185 0%,#e11d48 100%)}
+    .is-zero{background:linear-gradient(90deg,#cbd5e1 0%,#cbd5e1 100%)}
+
+    .sec-actions button{
+      border:1px solid #cbd5e1;
+      background:#fff;
+      color:var(--title);
+      border-radius:12px;
+      padding:10px 14px;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+
+    .sec-actions button:hover{
+      background:#f8fafc;
+      border-color:#94a3b8;
+      transform:translateY(-1px);
+    }
+
+    .sec-body{
+      display:none;
+      padding:0 16px 16px;
+      border-top:1px solid var(--line);
+      background:#fcfdff;
+    }
+
+    .sec-body.open{display:block}
+
+    .q-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      padding:14px 0;
+      border-bottom:1px solid #edf2f7;
+    }
+
+    .q-row:last-child{border-bottom:0}
+
+    .q-text{
+      font-size:14px;
+      line-height:1.5;
+      font-weight:700;
+      color:#1e293b;
+      flex:1;
+    }
+
+    .q-score{
+      min-width:140px;
+      display:flex;
+      justify-content:flex-end;
+    }
+
+    .exp-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .exp-item{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+      padding:14px;
+    }
+
+    .exp-item-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .exp-item-title{
+      font-size:14px;
+      font-weight:900;
+      color:var(--title);
+      line-height:1.4;
+    }
+
+    .exp-item-score{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .mini-progress{
+      height:10px;
+      background:#edf2f7;
+      border:1px solid #dbe3ef;
+      border-radius:999px;
+      overflow:hidden;
+    }
+
+    .exp-decision-card{
+      border:1px solid #f5dfa0;
+      border-radius:18px;
+      background:linear-gradient(135deg,#fffbea 0%,#fff4bf 100%);
+      padding:16px;
+    }
+
+    .exp-decision-label{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      font-weight:900;
+      color:#7c5b00;
+    }
+
+    .exp-decision-value{
+      margin-top:8px;
+      font-size:24px;
+      font-weight:900;
+      color:#5b4600;
+    }
+
+    .exp-justification{
+      margin-top:14px;
+    }
+
+    .exp-justification-label{
+      font-size:11px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:900;
+      margin-bottom:8px;
+    }
+
+    .employee-ack{
+      background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      margin-top:16px;
+      display:none;
+    }
+
+    .employee-ack-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    .employee-ack-title{
+      font-size:18px;
+      font-weight:900;
+      color:var(--title);
+    }
+
+    .employee-ack-sub{
+      margin-top:6px;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+      line-height:1.45;
+    }
+
+    .textarea-wrap{
+      margin-top:14px;
+    }
+
+    .textarea-label{
+      font-size:11px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:900;
+      margin-bottom:8px;
+    }
+
+    textarea{
+      width:100%;
+      min-height:120px;
+      resize:vertical;
+      padding:14px 14px;
+      border-radius:16px;
+      border:1px solid #cbd5e1;
+      background:#fff;
+      color:#0f172a;
+      font:700 14px/1.5 Arial,Helvetica,sans-serif;
+      outline:none;
+      transition:.15s ease;
+    }
+
+    textarea:focus{
+      border-color:#7aa7ff;
+      box-shadow:0 0 0 4px rgba(59,130,246,.12);
+    }
+
+    .ack-actions{
+      margin-top:14px;
+      display:flex;
+      justify-content:flex-end;
+    }
+
+    .btn-primary{
+      width:auto;
+      min-width:220px;
+      padding:12px 18px;
+      border-radius:14px;
+      border:1px solid #d8b100;
+      background:linear-gradient(180deg,#f7cf12 0%,#e7b800 100%);
+      color:#342700;
+      font-size:14px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 8px 20px rgba(231,184,0,.22);
+      transition:.15s ease;
+    }
+
+    .btn-primary:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.02);
+    }
+
+    .btn-primary:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+      transform:none;
+      box-shadow:none;
+    }
+
+    @media (max-width:1100px){
+      .summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    }
+
+    @media (max-width:980px){
+      .hero-grid{grid-template-columns:1fr}
+      .sec-head{grid-template-columns:1fr}
+      .exp-grid{grid-template-columns:1fr}
+    }
+
+    @media (max-width:640px){
+      .header-wrap,main{padding-left:14px;padding-right:14px}
+      .title{font-size:24px}
+      .summary-grid{grid-template-columns:1fr}
+      .q-row{flex-direction:column}
+      .q-score{min-width:0;justify-content:flex-start}
+      .ack-actions{justify-content:stretch}
+      .btn-primary{width:100%}
+      .exp-item-top{flex-direction:column}
+      .exp-item-score{justify-content:flex-start}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-wrap">
+      <div class="header-top">
+        <div>
+          <div class="eyebrow"><i></i> Plataforma de Avaliações D'Muller</div>
+          <div class="title">Avaliação de Desempenho</div>
+          <div class="sub" id="subHeader">Carregando avaliação...</div>
+        </div>
+
+        <div class="top-pills">
+          <span class="pill info" id="typePill">Tipo: -</span>
+          <span class="pill pending" id="statusPill">Pendente</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-grid">
+        <div class="hero-box">
+          <div class="hero-label">Funcionário</div>
+          <div class="hero-value" id="employeeView">-</div>
+          <div class="hero-sub" id="employeeSub">-</div>
+        </div>
+
+        <div class="hero-box">
+          <div class="hero-label">Gestor responsável</div>
+          <div class="hero-value" id="managerView">-</div>
+          <div class="hero-sub" id="managerSub">-</div>
+        </div>
+
+        <div class="hero-box">
+          <div class="hero-label">Período avaliado</div>
+          <div class="hero-value" id="period">-</div>
+          <div class="hero-sub" id="createdAt">-</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Resumo da avaliação</div>
+          <div class="section-sub">Visão consolidada do desempenho, status e principais destaques.</div>
+        </div>
+      </div>
+
+      <div id="summaryCard"></div>
+    </section>
+
+    <section class="section-card" id="experienceSectionCard" style="display:none;">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Avaliação de experiência</div>
+          <div class="section-sub">Resultado específico do período de experiência, com decisão e justificativa.</div>
+        </div>
+      </div>
+
+      <div id="experienceRoot"></div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Comentário do gestor</div>
+          <div class="section-sub">Fechamento registrado na avaliação.</div>
+        </div>
+      </div>
+
+      <div class="comment-box" id="managerComment">-</div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Competências avaliadas</div>
+          <div class="section-sub">Cada bloco mostra a média da competência e permite abrir as respostas detalhadas.</div>
+        </div>
+      </div>
+
+      <div class="sections-list" id="sectionsRoot"></div>
+    </section>
+
+    <section class="employee-ack" id="employeeCard">
+      <div class="employee-ack-top">
+        <div>
+          <div class="employee-ack-title">Confirmação do funcionário</div>
+          <div class="employee-ack-sub">Se esta avaliação for sua, confirme o recebimento e registre um comentário, se quiser.</div>
+        </div>
+
+        <div>
+          <span class="pill pending" id="ackPill">Pendente</span>
+        </div>
+      </div>
+
+      <div class="textarea-wrap">
+        <div class="textarea-label">Comentário do funcionário</div>
+        <textarea id="employeeComment" placeholder="Opcional..."></textarea>
+      </div>
+
+      <div class="ack-actions">
+        <button class="btn-primary" id="btnAcknowledge">Confirmar avaliação</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./js/performanceReviewView.js"></script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <script>
+    window.__DMULLER_API_BASE__ = window.__DMULLER_API_BASE__
+      || (["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname)
+        ? "http://127.0.0.1:8000"
+        : "https://SEU-BACKEND-PRODUCAO");
+  </script>
+  <title>Configurações • D'MULLER</title>
+  <link rel="stylesheet" href="/css/app.css"/>
+</head>
+<body>
+<script type="module">
+import { requireRole } from "/js/auth-guard.js";
+import { renderShell } from "/js/ui-shell.js";
+import { db } from "/js/firebase.js";
+import { DEFAULT_REVIEW_RULES, DEFAULT_NOTIFICATION_RULES, loadSettingsDoc } from "/js/review-core.js";
+import { collection, doc, getDoc, getDocs, query, setDoc, serverTimestamp, updateDoc, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const { user, role } = await requireRole(["admin"]);
+const content = await renderShell({ role, currentPage: "admin-settings" });
+content.innerHTML = `
+<style>
+.pg{max-width:1180px;margin:0 auto;display:grid;gap:14px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:22px;box-shadow:0 10px 24px rgba(0,0,0,.04);overflow:hidden}.head{padding:18px 20px;border-bottom:1px solid #eef2f7}.title{font-size:24px;font-weight:900;color:#0f172a}.tabs{display:flex;gap:8px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid #eef2f7}.tab{padding:10px 14px;border-radius:12px;border:1px solid #d1d5db;background:#fff;font-weight:900;cursor:pointer}.tab.active{background:#0f172a;color:#fff;border-color:#0f172a}.body{padding:20px}.pane{display:none}.pane.active{display:block}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field{display:flex;flex-direction:column;gap:8px}.label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#64748b;font-weight:900}.input,.select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:12px;font:inherit;background:#fff}.input:focus,.select:focus{outline:none;border-color:#f5c518;box-shadow:0 0 0 4px rgba(245,197,24,.18)}.check{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;font-weight:800}.actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}.btn{padding:12px 16px;border-radius:12px;border:1px solid #d1d5db;background:#fff;font-weight:900;cursor:pointer}.btn.main{background:#0f172a;color:#fff;border-color:#0f172a}.btn.warn{background:#f5c518;color:#111827;border-color:#f5c518}.msg{margin-top:12px;font-weight:800}.ok{color:#166534}.bad{color:#b91c1c}.panel{border:1px solid #e5e7eb;border-radius:18px;padding:16px;background:#fbfdff}.mini{border:1px solid #e5e7eb;border-radius:14px;padding:12px;background:#fff}.mini .k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:900}.mini .v{margin-top:6px;font-size:14px;font-weight:900;color:#0f172a}.hint{color:#64748b;font-size:13px;font-weight:700;line-height:1.5}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}@media(max-width:980px){.grid,.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:640px){.grid,.grid2{grid-template-columns:1fr}}
+</style>
+<div class="pg">
+  <div class="card">
+    <div class="head"><div class="title">Configurações</div></div>
+    <div class="tabs">
+      <button class="tab active" data-tab="regras">Regras</button>
+      <button class="tab" data-tab="notificacoes">Notificações</button>
+      <button class="tab" data-tab="hierarquia">Hierarquia</button>
+    </div>
+    <div class="body">
+      <div class="pane active" id="pane-regras">
+        <div class="grid">
+          <div class="field"><div class="label">45 dias • antecedência</div><input id="d45" class="input" type="number" min="0"></div>
+          <div class="field"><div class="label">90 dias • antecedência</div><input id="d90" class="input" type="number" min="0"></div>
+          <div class="field"><div class="label">Semestral • antecedência</div><input id="d180" class="input" type="number" min="0"></div>
+          <div class="field"><div class="label">Anual • antecedência</div><input id="d365" class="input" type="number" min="0"></div>
+        </div>
+        <div class="grid2" style="margin-top:14px">
+          <label class="check"><input id="ackRequired" type="checkbox"> Solicitar ciência do avaliado</label>
+          <div class="hint">As avaliações de experiência continuam sendo geradas automaticamente no cadastro do funcionário, com base na data de admissão.</div>
+        </div>
+        <div class="actions"><button class="btn main" id="btnSaveRules">Salvar regras</button></div>
+        <div class="msg" id="msgRules"></div>
+      </div>
+      <div class="pane" id="pane-notificacoes">
+        <div class="grid2">
+          <label class="check"><input id="inAppEnabled" type="checkbox"> Avisos internos habilitados</label>
+          <label class="check"><input id="notifyOnNewTask" type="checkbox"> Avisar novas pendências</label>
+        </div>
+        <div class="field" style="margin-top:14px;max-width:280px"><div class="label">Lembretes antes do vencimento</div><input id="notifyDays" class="input" placeholder="Ex.: 7,3,1"></div>
+        <div class="actions"><button class="btn main" id="btnSaveNotifications">Salvar notificações</button></div>
+        <div class="msg" id="msgNotifications"></div>
+      </div>
+      <div class="pane" id="pane-hierarquia">
+        <div class="grid2">
+          <div class="field"><div class="label">Funcionário</div><select id="employeeSelect" class="select"><option value="">Selecione</option></select></div>
+          <div class="field"><div class="label">Novo gestor</div><select id="newManagerSelect" class="select"><option value="">Selecione</option></select></div>
+        </div>
+        <div class="panel" style="margin-top:14px">
+          <div class="grid2">
+            <div class="mini"><div class="k">Coordenador atual</div><div class="v" id="currentCoordinator">-</div></div>
+            <div class="mini"><div class="k">Gestor atual</div><div class="v" id="currentManager">-</div></div>
+            <div class="mini"><div class="k">Pendências abertas</div><div class="v" id="pendingCount">0</div></div>
+            <div class="mini"><div class="k">Avaliações concluídas</div><div class="v" id="completedCount">0</div></div>
+          </div>
+        </div>
+        <div class="actions"><button class="btn warn" id="btnTransferManager">Trocar gestor</button></div>
+        <div class="msg" id="msgHierarchy"></div>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+const tabs=[...document.querySelectorAll('.tab')];
+tabs.forEach(btn=>btn.addEventListener('click',()=>{tabs.forEach(t=>t.classList.remove('active'));document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('pane-'+btn.dataset.tab).classList.add('active');}));
+
+const reviewRules = await loadSettingsDoc('review_rules', DEFAULT_REVIEW_RULES);
+const notificationRules = await loadSettingsDoc('notification_rules', DEFAULT_NOTIFICATION_RULES);
+const systemOptionsSnap = await getDoc(doc(db, 'app_settings', 'system_options'));
+const systemOptions = systemOptionsSnap.exists() ? systemOptionsSnap.data() : {};
+
+document.getElementById('d45').value = reviewRules.experience45?.daysBeforeDue ?? 4;
+document.getElementById('d90').value = reviewRules.experience90?.daysBeforeDue ?? 4;
+document.getElementById('d180').value = reviewRules.semiannual?.daysBeforeDue ?? 7;
+document.getElementById('d365').value = reviewRules.annual?.daysBeforeDue ?? 10;
+document.getElementById('ackRequired').checked = systemOptions.employeeAcknowledgmentRequired !== false;
+document.getElementById('inAppEnabled').checked = notificationRules.inAppEnabled !== false;
+document.getElementById('notifyOnNewTask').checked = notificationRules.notifyOnNewTask !== false;
+document.getElementById('notifyDays').value = (notificationRules.notifyDaysBeforeDue || [7,3,1]).join(',');
+
+function setMsg(id, text, ok=false){ const el=document.getElementById(id); el.className='msg ' + (text ? (ok ? 'ok':'bad') : ''); el.textContent=text || ''; }
+
+document.getElementById('btnSaveRules').addEventListener('click', async ()=>{
+  setMsg('msgRules','Salvando...');
+  try {
+    await setDoc(doc(db,'app_settings','review_rules'), {
+      experience45:{...(reviewRules.experience45||{}),daysBeforeDue:Number(document.getElementById('d45').value||4)},
+      experience90:{...(reviewRules.experience90||{}),daysBeforeDue:Number(document.getElementById('d90').value||4)},
+      semiannual:{...(reviewRules.semiannual||{}),daysBeforeDue:Number(document.getElementById('d180').value||7)},
+      annual:{...(reviewRules.annual||{}),daysBeforeDue:Number(document.getElementById('d365').value||10)},
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    await setDoc(doc(db,'app_settings','system_options'), { employeeAcknowledgmentRequired: document.getElementById('ackRequired').checked, allowTaskTransferOnManagerChange: true, updatedAt: serverTimestamp() }, { merge:true });
+    setMsg('msgRules','Regras salvas com sucesso.', true);
+  } catch { setMsg('msgRules','Não foi possível salvar agora.'); }
+});
+
+document.getElementById('btnSaveNotifications').addEventListener('click', async ()=>{
+  setMsg('msgNotifications','Salvando...');
+  try {
+    await setDoc(doc(db,'app_settings','notification_rules'), {
+      inAppEnabled: document.getElementById('inAppEnabled').checked,
+      notifyOnNewTask: document.getElementById('notifyOnNewTask').checked,
+      notifyDaysBeforeDue: String(document.getElementById('notifyDays').value||'').split(',').map(v=>Number(String(v).trim())).filter(v=>Number.isFinite(v)&&v>=0),
+      updatedAt:serverTimestamp()
+    }, { merge:true });
+    setMsg('msgNotifications','Notificações salvas com sucesso.', true);
+  } catch { setMsg('msgNotifications','Não foi possível salvar agora.'); }
+});
+
+const [employeesSnap, rolesSnap] = await Promise.all([getDocs(collection(db,'employees')), getDocs(collection(db,'roles'))]);
+const employees = employeesSnap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.ativo!==false && (x.role||'employee')==='employee').sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR'));
+const leaders = rolesSnap.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.ativo!==false);
+const managers = leaders.filter(x=>x.role==='manager').sort((a,b)=>(a.nome||'').localeCompare(b.nome||'','pt-BR'));
+const leaderMap = new Map(leaders.map(x=>[x.id,x]));
+const employeeSelect = document.getElementById('employeeSelect');
+const newManagerSelect = document.getElementById('newManagerSelect');
+employees.forEach(emp=>{ const opt=document.createElement('option'); opt.value=emp.id; opt.textContent=emp.nome || emp.email || 'Funcionário'; employeeSelect.appendChild(opt); });
+managers.forEach(m=>{ const opt=document.createElement('option'); opt.value=m.id; opt.textContent=m.nome || m.email || 'Gestor'; newManagerSelect.appendChild(opt); });
+
+let selectedEmployee=null;
+async function refreshEmployeeInfo(){
+  const id=employeeSelect.value || ''; if(!id){ selectedEmployee=null; document.getElementById('currentCoordinator').textContent='-'; document.getElementById('currentManager').textContent='-'; document.getElementById('pendingCount').textContent='0'; document.getElementById('completedCount').textContent='0'; return; }
+  const snap = await getDoc(doc(db,'employees',id));
+  if(!snap.exists()) return;
+  selectedEmployee = { id:snap.id, ...snap.data() };
+  const manager = leaderMap.get(selectedEmployee.gestorId || '');
+  const coordinator = leaderMap.get(selectedEmployee.coordinatorUid || '');
+  document.getElementById('currentCoordinator').textContent = coordinator?.nome || coordinator?.email || '-';
+  document.getElementById('currentManager').textContent = manager?.nome || manager?.email || '-';
+  const [taskSnap, reviewSnap] = await Promise.all([
+    getDocs(query(collection(db,'review_tasks'), where('evaluatedUid','==', selectedEmployee.uid || selectedEmployee.id))),
+    getDocs(query(collection(db,'performance_reviews'), where('evaluatedUid','==', selectedEmployee.uid || selectedEmployee.id)))
+  ]);
+  const tasks = taskSnap.docs.map(d=>d.data());
+  document.getElementById('pendingCount').textContent = String(tasks.filter(t=>!['submitted','cancelled'].includes(String(t.status||'').toLowerCase())).length);
+  document.getElementById('completedCount').textContent = String(reviewSnap.size);
+  newManagerSelect.value = selectedEmployee.gestorId || '';
+}
+employeeSelect.addEventListener('change', refreshEmployeeInfo);
+
+document.getElementById('btnTransferManager').addEventListener('click', async ()=>{
+  setMsg('msgHierarchy','');
+  if(!selectedEmployee) return setMsg('msgHierarchy','Selecione um funcionário.');
+  const newManagerUid = newManagerSelect.value || '';
+  if(!newManagerUid) return setMsg('msgHierarchy','Selecione o novo gestor.');
+  if(newManagerUid === (selectedEmployee.gestorId || '')) return setMsg('msgHierarchy','Escolha um gestor diferente.');
+  const newManager = leaderMap.get(newManagerUid);
+  const newCoordinatorUid = newManager?.coordinatorUid || '';
+  const transferOpen = confirm('Deseja transferir as pendências abertas para o novo gestor?');
+  setMsg('msgHierarchy','Atualizando vínculo...');
+  try {
+    await updateDoc(doc(db,'employees',selectedEmployee.id), {
+      gestorId:newManagerUid,
+      gestorEmail:newManager?.email || '',
+      coordinatorUid:newCoordinatorUid,
+      updatedAt:serverTimestamp()
+    });
+    const taskSnap = await getDocs(query(collection(db,'review_tasks'), where('evaluatedUid','==', selectedEmployee.uid || selectedEmployee.id)));
+    const reviewSnap = await getDocs(query(collection(db,'performance_reviews'), where('evaluatedUid','==', selectedEmployee.uid || selectedEmployee.id)));
+    const batch = writeBatch(db);
+    reviewSnap.forEach(d=> batch.update(d.ref, { gestorId:newManagerUid, coordinatorUid:newCoordinatorUid, updatedAt:serverTimestamp() }));
+    taskSnap.forEach(d=>{
+      const data=d.data()||{};
+      const open = !['submitted','cancelled'].includes(String(data.status||'').toLowerCase());
+      const payload = { gestorId:newManagerUid, coordinatorUid:newCoordinatorUid, updatedAt:serverTimestamp() };
+      if(transferOpen && open){ payload.evaluatorUid = newManagerUid; payload.evaluatorRole = 'manager'; payload.evaluatorName = newManager?.nome || newManager?.email || ''; payload.notificationState = { ...(data.notificationState||{}), isNew:true, readByEvaluator:false }; }
+      batch.update(d.ref, payload);
+    });
+    await batch.commit();
+    setMsg('msgHierarchy','Gestor atualizado com sucesso.', true);
+    await refreshEmployeeInfo();
+  } catch { setMsg('msgHierarchy','Não foi possível concluir a troca agora.'); }
+});
+</script>
+</body>
+</html>

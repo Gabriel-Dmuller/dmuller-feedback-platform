@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    window.__DMULLER_API_BASE__ = window.__DMULLER_API_BASE__
+      || (["localhost", "127.0.0.1", "0.0.0.0"].includes(window.location.hostname)
+        ? "http://127.0.0.1:8000"
+        : "https://SEU-BACKEND-PRODUCAO");
+  </script>
+  <title>Avaliação de Desempenho • D'MULLER</title>
+  <link rel="stylesheet" href="/css/app.css" />
+
+  <style>
+    :root{
+      --mp-line:#dbe3ef;
+      --mp-title:#0b1f44;
+      --mp-text:#0f172a;
+      --mp-muted:#64748b;
+      --mp-shadow:0 14px 30px rgba(15,23,42,.08);
+    }
+
+    body{
+      background:
+        radial-gradient(circle at top right, rgba(244,196,0,.10), transparent 24%),
+        linear-gradient(180deg,#f8fbff 0%,#f2f5fa 100%);
+    }
+
+    .mp-page{max-width:980px;margin:0 auto}
+    .mp-stack{display:flex;flex-direction:column;gap:14px}
+
+    .mp-hero{
+      background:linear-gradient(135deg,#081226 0%,#0f254c 100%);
+      color:#fff;
+      border-radius:24px;
+      padding:22px;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 16px 34px rgba(2,8,23,.18);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .mp-hero:before{
+      content:"";
+      position:absolute;
+      inset:auto -40px -40px auto;
+      width:220px;
+      height:220px;
+      border-radius:999px;
+      background:radial-gradient(circle, rgba(244,196,0,.22) 0%, rgba(244,196,0,0) 70%);
+      pointer-events:none;
+    }
+
+    .mp-kicker{
+      display:inline-flex;align-items:center;gap:8px;
+      font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#dbe7ff;
+    }
+    .mp-kicker i{
+      width:8px;height:8px;border-radius:999px;background:#f4c400;display:inline-block;
+      box-shadow:0 0 0 6px rgba(244,196,0,.14);
+    }
+
+    .mp-title{
+      margin:10px 0 0;
+      font-size:30px;
+      font-weight:900;
+      line-height:1.08;
+    }
+
+    .mp-sub{
+      margin-top:8px;
+      font-size:14px;
+      color:#dbe7ff;
+      font-weight:700;
+      line-height:1.5;
+      max-width:760px;
+    }
+
+    .mp-linkRow{margin-top:12px}
+    .mp-link{
+      display:inline-flex;align-items:center;gap:8px;
+      color:#fff;font-weight:900;font-size:12px;text-decoration:none;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:999px;
+      padding:8px 12px;
+    }
+    .mp-link:hover{background:rgba(255,255,255,.16)}
+
+    .mp-panel{
+      border:1px solid var(--mp-line);
+      border-radius:22px;
+      background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+      box-shadow:var(--mp-shadow);
+      overflow:hidden;
+    }
+
+    .mp-panelBody{padding:20px}
+
+    .mp-panelHead{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .mp-panelTitle{
+      font-size:18px;font-weight:900;color:var(--mp-title);
+    }
+
+    .mp-panelSub{
+      margin-top:5px;font-size:13px;color:var(--mp-muted);font-weight:700;line-height:1.45;
+    }
+
+    .mp-row{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
+    .mp-field{display:flex;flex-direction:column;gap:8px;min-width:220px;flex:1}
+    .mp-label{font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--mp-muted)}
+
+    .mp-select,.mp-input{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(16,24,40,.14);
+      font-weight:900;
+      outline:none;
+      background:#fff;
+      color:var(--mp-text);
+      font-size:14px;
+    }
+
+    .mp-select:focus,.mp-input:focus{
+      border-color: rgba(245,197,24,.55);
+      box-shadow: 0 0 0 4px rgba(245,197,24,.22);
+    }
+
+    .mp-select[disabled]{background:#f8fafc;color:#64748b}
+
+    .mp-inline{
+      min-height:18px;
+      color:#9f1239;
+      font-size:12px;
+      font-weight:800;
+      margin-top:8px;
+    }
+
+    .mp-summary{
+      margin-top:14px;
+      padding:14px;
+      border-radius:18px;
+      border:1px solid var(--mp-line);
+      background:linear-gradient(180deg,#fffbea 0%,#fffdf6 100%);
+      font-size:14px;
+      font-weight:800;
+      color:#5b4600;
+      line-height:1.6;
+    }
+
+    .mp-manualWrap{
+      margin-top:12px;
+      max-height:0;
+      opacity:0;
+      overflow:hidden;
+      transition:max-height .2s ease, opacity .2s ease;
+    }
+    .mp-manualWrap.open{
+      max-height:180px;
+      opacity:1;
+    }
+
+    .mp-manualRow{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+    .mp-manualRow .mp-field{min-width:260px}
+
+    .mp-footer{
+      margin-top:16px;
+      padding-top:16px;
+      border-top:1px solid rgba(16,24,40,.08);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    }
+
+    .mp-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+    .mp-btn{
+      padding:11px 14px;border-radius:14px;
+      border:1px solid rgba(16,24,40,.14);
+      background:#fff;font-weight:950;cursor:pointer;
+      text-decoration:none;color:var(--mp-text);
+      transition:transform .08s ease, filter .12s ease, background .12s ease;
+      user-select:none;display:inline-flex;align-items:center;gap:8px;
+    }
+    .mp-btn:hover{background:#f9fafb}
+    .mp-btn:active{transform:translateY(1px)}
+
+    .mp-btn-dark{
+      background:linear-gradient(180deg,#111827,#0b1220);
+      border-color:#0b1220;color:#fff
+    }
+    .mp-btn-dark:hover{filter:brightness(1.06)}
+
+    .mp-btn-cta{
+      background:linear-gradient(180deg,rgba(245,197,24,.98),rgba(245,197,24,.88));
+      border-color:rgba(245,197,24,.55);color:#111827
+    }
+
+    .mp-btn[disabled]{opacity:.55;cursor:not-allowed;filter:grayscale(.1)}
+    .mp-btn[disabled]:hover{background:#fff}
+
+    @media (max-width:680px){
+      .mp-row{flex-direction:column;align-items:stretch}
+      .mp-field{width:100%}
+      .mp-manualRow{flex-direction:column;align-items:stretch}
+      .mp-manualRow .mp-field{min-width:0}
+      .mp-footer{justify-content:flex-start}
+      .mp-btn-cta{width:100%;justify-content:center}
+      .mp-title{font-size:24px}
+    }
+  </style>
+</head>
+<body>
+  <script type="module" src="/js/managerPerformance.js"></script>
+</body>
+</html>

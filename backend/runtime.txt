@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 python-3.12.0
+=======
+python-3.12.0
+>>>>>>> 7392de0 (Add Python version to runtime.txt)

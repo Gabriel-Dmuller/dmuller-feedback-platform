@@ -55,8 +55,9 @@
   </main>
   <script type="module">
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-    import { auth } from "/js/firebase.js";
-    import { apiGet, logBackendSuccess } from "/js/api-client.js";
+    import { collection, doc, getDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    import { auth, db } from "/js/firebase.js";
+    import { apiGet, logBackendSuccess, shouldUseFirestoreFallback } from "/js/api-client.js";
     import { taskTypeLabel } from "/js/review-core.js";
 
     const helloLine = document.getElementById("helloLine");
@@ -98,23 +99,73 @@
 
     btnLogout.addEventListener('click', async ()=>{ await signOut(auth); window.location.href = '/index.html'; });
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) { window.location.href = '/index.html'; return; }
-      const me = await apiGet("/api/me");
-      logBackendSuccess("perfil do funcionário", { uid: me.uid });
-      const roleData = me.profile || {};
-      const role = me.role || '';
-      if (role !== 'employee') {
-        window.location.href = '/manager-home.html';
+    let empSettled = false;
+    const empUnsub = onAuthStateChanged(auth, async (user) => {
+      if (empSettled) return;
+      if (!user) {
+        await new Promise(r => setTimeout(r, 200));
+        if (!auth.currentUser) {
+          empSettled = true;
+          empUnsub();
+          window.location.href = '/index.html';
+        }
         return;
       }
-      helloLine.textContent = roleData?.nome ? `Olá, ${roleData.nome}` : `Olá, ${user.email}`;
-      userRight.textContent = user.email || '-';
+      empSettled = true;
+      empUnsub();
 
-      const result = await apiGet("/api/reviews");
-      logBackendSuccess("histórico do funcionário", { count: result?.reviews?.length || 0 });
-      reviews = (result?.reviews || []).sort((a,b)=>String(b.submittedAt || b.createdAt || "").localeCompare(String(a.submittedAt || a.createdAt || "")));
-      render();
+      try {
+        let role = '';
+        let roleData = {};
+
+        // Tenta backend primeiro
+        try {
+          const me = await apiGet("/api/me");
+          logBackendSuccess("perfil do funcionário", { uid: me.uid });
+          roleData = me.profile || {};
+          role = me.role || '';
+        } catch (apiErr) {
+          // Backend indisponível: lê role do Firestore
+          console.warn("[employee] backend indisponível, usando Firestore para role.", apiErr?.message);
+          const snap = await getDoc(doc(db, "roles", user.uid));
+          if (snap.exists()) {
+            roleData = snap.data() || {};
+            role = roleData.role || '';
+          }
+        }
+
+        if (role !== 'employee') {
+          window.location.href = '/manager-home.html';
+          return;
+        }
+        helloLine.textContent = roleData?.nome ? `Olá, ${roleData.nome}` : `Olá, ${user.email}`;
+        userRight.textContent = user.email || '-';
+
+        // Carrega avaliações via backend com fallback para Firestore
+        try {
+          const result = await apiGet("/api/reviews");
+          logBackendSuccess("histórico do funcionário", { count: result?.reviews?.length || 0 });
+          reviews = (result?.reviews || []).sort((a,b)=>String(b.submittedAt || b.createdAt || "").localeCompare(String(a.submittedAt || a.createdAt || "")));
+        } catch (reviewsErr) {
+          if (shouldUseFirestoreFallback(reviewsErr)) {
+            console.warn("[employee] fallback Firestore para avaliações.", reviewsErr?.message);
+            const snap = await getDocs(query(collection(db, 'performance_reviews'), where('evaluatedUid', '==', user.uid)));
+            reviews = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>{
+              const ta = a.submittedAt?.toMillis?.() || 0;
+              const tb = b.submittedAt?.toMillis?.() || 0;
+              return tb - ta;
+            });
+          } else {
+            console.error("[employee] erro ao carregar avaliações:", reviewsErr?.message);
+          }
+        }
+        render();
+      } catch (err) {
+        console.error("[employee] erro geral:", err);
+        helloLine.textContent = `Olá, ${user.email}`;
+        userRight.textContent = user.email || '-';
+        render();
+      }
     });
   </script>
 </body>

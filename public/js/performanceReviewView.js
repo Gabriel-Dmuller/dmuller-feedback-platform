@@ -157,7 +157,7 @@ statusPill.textContent = normalizeAck(data.acknowledgment?.status) === "acknowle
 statusPill.className = `pill ${normalizeAck(data.acknowledgment?.status) === "acknowledged" ? "ack" : "pending"}`;
 typePill.textContent = typeLabel(data.taskType);
 employeeViewEl.textContent = data.evaluatedName || "-";
-employeeSubEl.textContent = data.evaluatedRole || "FuncionÃ¡rio";
+employeeSubEl.textContent = data.evaluatedRole || "Funcionário";
 managerViewEl.textContent = data.evaluatorName || "-";
 managerSubEl.textContent = data.evaluatorRole || "Gestor";
 periodEl.textContent = fmtDateOnly(data.referenceDate);

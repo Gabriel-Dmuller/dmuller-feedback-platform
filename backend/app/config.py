@@ -15,6 +15,12 @@ class Settings(BaseModel):
     api_host: str = os.getenv("API_HOST", "0.0.0.0")
     api_port: int = int(os.getenv("API_PORT", "8000"))
     api_prefix: str = os.getenv("API_PREFIX", "/api")
+    cors_allow_methods: list[str] = Field(default_factory=lambda: _split_csv(
+        os.getenv("CORS_ALLOW_METHODS", "GET,POST,PATCH,DELETE,OPTIONS")
+    ))
+    cors_allow_headers: list[str] = Field(default_factory=lambda: _split_csv(
+        os.getenv("CORS_ALLOW_HEADERS", "Authorization,Content-Type")
+    ))
     cors_allow_origins: list[str] = Field(default_factory=lambda: _split_csv(
         os.getenv(
             "CORS_ALLOW_ORIGINS",
@@ -25,9 +31,8 @@ class Settings(BaseModel):
                 "http://127.0.0.1:5173",
                 "http://localhost:5500",
                 "http://127.0.0.1:5500",
-                "https://SEU-PROJETO.web.app",
-                "https://SEU-PROJETO.firebaseapp.com",
-                "https://SEU-DOMINIO-DE-PRODUCAO",
+                "https://feedback---d-muller.web.app",
+                "https://feedback---d-muller.firebaseapp.com",
             ]),
         )
     ))

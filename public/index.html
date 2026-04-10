@@ -51,15 +51,45 @@
       if (role === "employee") { window.location.href = next || "/employee.html"; return; }
       setAlert("Seu acesso ainda não está liberado. Fale com o RH para concluir o cadastro.", "bad");
     }
+    // Protege contra loop de redirecionamento:
+    // Se ?msg=erro veio de uma página protegida que falhou, não redireciona automaticamente.
+    // O usuário pode clicar em "Entrar" para tentar novamente.
+    const urlParams = new URLSearchParams(window.location.search);
+    const msgParam = urlParams.get("msg");
+    let redirectInProgress = false;
+
     onAuthStateChanged(auth, async (user) => {
       if (!user) { btnLogout.style.display = "none"; return; }
       btnLogout.style.display = "inline-flex";
+
+      // Se chegamos aqui com ?msg=erro, houve falha em página protegida.
+      // Não redirecionamos automaticamente para evitar loop infinito.
+      // Deixamos o usuário ver a tela de login com a opção de tentar novamente.
+      if (msgParam === "erro") {
+        setAlert("Ocorreu um erro ao carregar a plataforma. Clique em Entrar para tentar novamente.", "bad");
+        return;
+      }
+
+      // Anti-loop: ignora chamadas repetidas dentro da mesma sessão de navegação
+      if (redirectInProgress) return;
+      redirectInProgress = true;
+
       setAlert("Validando acesso...", "");
-      try { await routeByRole(user); } catch { setAlert("Não foi possível validar seu acesso agora. Tente novamente.", "bad"); }
+      try { await routeByRole(user); }
+      catch { redirectInProgress = false; setAlert("Não foi possível validar seu acesso agora. Tente novamente.", "bad"); }
     });
     async function doLogin(){
       const e = (email.value || "").trim();
       const p = (pass.value || "").trim();
+
+      // Se o usuário já está autenticado e veio de ?msg=erro, tenta rotear diretamente
+      // sem fazer novo login (evita "email/password invalid" desnecessário)
+      if (msgParam === "erro" && auth.currentUser && !e && !p) {
+        setAlert("Verificando acesso...", "");
+        try { await routeByRole(auth.currentUser); return; }
+        catch { setAlert("Não foi possível acessar a plataforma. Tente sair e entrar novamente.", "bad"); return; }
+      }
+
       if (!e || !p) return setAlert("Preencha e-mail e senha.", "bad");
       setLoading(true); setAlert("Entrando...", "");
       try { await signInWithEmailAndPassword(auth, e, p); }

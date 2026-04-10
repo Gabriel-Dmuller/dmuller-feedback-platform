@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import Depends, FastAPI, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from firebase_admin import auth as firebase_auth
@@ -8,6 +10,8 @@ from .services.employees import normalize_employee
 from .services.portal import acknowledge_review, delete_employee, get_me, get_review, get_task, list_scoped_employees, list_scoped_reviews, list_scoped_tasks, list_visible_leaders, update_employee
 from .services.reviews import build_admission_tasks, create_admission_tasks, create_review_task, review_template, submit_review
 
+logger = logging.getLogger("dmuller.api")
+
 app = FastAPI(title="D'Muller Avaliações API", version="2026.04")
 app.add_middleware(
     CORSMiddleware,
@@ -17,6 +21,16 @@ app.add_middleware(
     allow_headers=settings.cors_allow_headers,
     max_age=86400,
 )
+
+
+@app.on_event("startup")
+def log_cors_configuration():
+    logger.info(
+        "CORS configured: origins=%s methods=%s headers=%s",
+        settings.cors_allow_origins,
+        settings.cors_allow_methods,
+        settings.cors_allow_headers,
+    )
 
 
 def current_user(authorization: str | None = Header(default=None)):
